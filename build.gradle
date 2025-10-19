@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.8.20'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'com.woxloi'
+version = '1.0'
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly fileTree(dir: 'libs', include: '*.jar')
+    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compileOnly "io.lumine:Mythic-Dist:5.0.4-SNAPSHOT"
+    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
+    implementation("net.kyori:adventure-platform-bukkit:4.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+}
+
+def targetJavaVersion = 17
+java {
+    sourceCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    targetCompatibility = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < JavaVersion.toVersion(targetJavaVersion)) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+shadowJar {
+    archiveFileName.set("${project.name}-${project.version}.jar")
+}
