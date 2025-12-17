@@ -127,4 +127,17 @@ object PartyManager {
         val party = getParty(player) ?: return emptyList()
         return party.members.mapNotNull { Bukkit.getPlayer(it) }
     }
+
+    fun isSameParty(uuid1: UUID, uuid2: UUID): Boolean {
+        if (uuid1 == uuid2) return true
+
+        val partyId1 = playerToPartyId[uuid1]
+        val partyId2 = playerToPartyId[uuid2]
+
+        // 両方パーティー未所属 → 同一扱いしない
+        if (partyId1 == null || partyId2 == null) return false
+
+        return partyId1 == partyId2
+    }
+
 }

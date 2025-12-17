@@ -17,6 +17,8 @@ data class QuestData(
     var shareProgress: Boolean = false,
     var shareCompletion: Boolean = false,
 
+    var floorId: String? = null,
+
     var teleportWorld: String? = null,
     var teleportX: Double? = null,
     var teleportY: Double? = null,

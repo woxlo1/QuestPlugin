@@ -18,11 +18,11 @@ class QuestListCommand(private val plugin: JavaPlugin) : CommandExecutor {
             sender.sendMessage(QuestPlugin.prefix + "§c§l登録されたクエストはありません。")
             return true
         }
-        sender.sendMessage(QuestPlugin.prefix + "§a§l====== クエスト一覧 ======")
+        sender.sendMessage("§a§l====== クエスト一覧 ======")
         for (quest in quests) {
-            sender.sendMessage(Component.text(QuestPlugin.prefix + "§e§l${quest.id} : ${quest.name}").clickEvent(suggestCommand("/quest info ${quest.id}")));
+            sender.sendMessage(Component.text("§e§l${quest.id} : ${quest.name}").clickEvent(suggestCommand("/quest info ${quest.id}")));
         }
-        sender.sendMessage(QuestPlugin.prefix + "§a§l====================")
+        sender.sendMessage("§a§l====================")
         return true
     }
 }

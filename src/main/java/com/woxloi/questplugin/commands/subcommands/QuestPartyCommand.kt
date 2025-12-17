@@ -128,7 +128,7 @@ class QuestPartyCommand : CommandExecutor {
 
     private fun joinParty(player: Player, args: Array<String>) {
         if (args.size < 2) {
-            player.sendMessage("QuestPlugin.PartyPrefix + §c§l参加するリーダー名を指定してください。")
+            player.sendMessage(QuestPlugin.PartyPrefix + "§c§l参加するリーダー名を指定してください。")
             return
         }
         val leader = Bukkit.getPlayer(args[1])

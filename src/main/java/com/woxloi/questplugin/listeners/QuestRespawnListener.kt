@@ -6,6 +6,7 @@ import org.bukkit.event.player.PlayerRespawnEvent
 import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestPlugin
 import com.woxloi.questplugin.party.PartyManager
+import org.bukkit.event.player.PlayerQuitEvent
 
 class QuestRespawnListener : Listener {
 
@@ -36,7 +37,13 @@ class QuestRespawnListener : Listener {
             data.originalLocation.clone()
         }
 
-
         event.respawnLocation = destination
+    }
+    @EventHandler
+
+    fun onQuit(e: PlayerQuitEvent) {
+        if (ActiveQuestManager.isQuesting(e.player)) {
+            ActiveQuestManager.cancelQuest(e.player)
+        }
     }
 }

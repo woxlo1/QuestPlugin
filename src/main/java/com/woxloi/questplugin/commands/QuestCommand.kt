@@ -233,6 +233,17 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("クエスト設定を保存する")
                 .setExecutor(QuestSaveConfigCommand(plugin))
         )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("create"))
+                .addArgument(SCommandArgument().addAllowedString("floor"))
+                .addArgument(SCommandArgument().addAlias("内部名"))
+                .addRequiredPermission("quest.create.floor")
+                .addExplanation("クエスト用フロアを作成")
+                .setExecutor(QuestCreateFloorCommand())
+        )
+
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("deposit"))
@@ -366,5 +377,13 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("指定したプレイヤーの履歴を見る")
                 .setExecutor(QuestLogOpCommand(plugin))
         )
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("wand"))
+                .addRequiredPermission("quest.wand")
+                .addExplanation("範囲指定用ワンドを取得")
+                .setExecutor(QuestWandCommand())
+        )
+
     }
 }

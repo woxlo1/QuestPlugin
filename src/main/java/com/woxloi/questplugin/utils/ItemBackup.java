@@ -47,11 +47,11 @@ public class ItemBackup {
 
             config.save(file);
 
-            player.sendMessage("§e§lインベントリをファイルに保存しました。");
-            player.sendMessage("§e§l万が一バグで消えた場合補填はありません。");
+            player.sendMessage("§eインベントリをファイルに保存しました。");
+            player.sendMessage("§e万が一バグで消えた場合補填はありません。");
 
         } catch (Exception e) {
-            player.sendMessage("§cインベントリの保存に失敗しました。");
+            player.sendMessage("§eインベントリの保存に失敗しました。");
             e.printStackTrace();
         }
     }
@@ -61,7 +61,7 @@ public class ItemBackup {
      */
     public static void loadInventoryFromFile(Player player, File file) {
         if (!file.exists()) {
-            player.sendMessage("§c§lバックアップファイルが存在しません。");
+            player.sendMessage("§eバックアップファイルが存在しません。");
             return;
         }
 
@@ -77,10 +77,10 @@ public class ItemBackup {
             player.getInventory().setItemInOffHand(offHand == null ? new ItemStack(Material.AIR) : offHand);
 
             player.updateInventory();
-            player.sendMessage("§e§lインベントリを復元しました。");
+            player.sendMessage("§eインベントリを復元しました。");
 
         } catch (Exception e) {
-            player.sendMessage("§c§lインベントリの復元に失敗しました。");
+            player.sendMessage("§eインベントリの復元に失敗しました。");
             e.printStackTrace();
         }
     }

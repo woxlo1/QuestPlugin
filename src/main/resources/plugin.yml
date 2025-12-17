@@ -3,6 +3,7 @@ main: com.woxloi.questplugin.QuestPlugin
 version: 1.0
 api-version: 1.19
 depend: [MythicMobs]
+softdepend: [Vault]
 authors:
   - woxloi
 commands:

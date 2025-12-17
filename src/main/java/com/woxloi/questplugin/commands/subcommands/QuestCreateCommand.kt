@@ -20,7 +20,7 @@ class QuestCreateCommand(private val plugin: JavaPlugin) : CommandExecutor {
         }
 
         QuestConfigManager.createQuest(id)
-        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト[$id]を作成しました。")
+        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト" + id + "を作成しました。")
         return true
     }
 }

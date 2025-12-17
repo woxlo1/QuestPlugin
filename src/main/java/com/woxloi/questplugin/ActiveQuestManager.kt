@@ -14,6 +14,8 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.plugin.Plugin
 import com.woxloi.questplugin.QuestPlugin.Companion.plugin
+import com.woxloi.questplugin.QuestPlugin.Companion.prefix
+import com.woxloi.questplugin.floor.QuestFloorManager
 import com.woxloi.questplugin.party.PartyManager
 import com.woxloi.questplugin.utils.ItemBackup
 import java.io.File
@@ -25,16 +27,18 @@ object ActiveQuestManager {
     private val activeQuests = mutableMapOf<UUID, com.woxloi.questplugin.ActiveQuestManager.PlayerQuestData>()
 
     data class PlayerQuestData(
-        val quest: com.woxloi.questplugin.QuestData,
+        val quest: QuestData,
         val startTime: Long,
         var progress: Int = 0,
         val bossBar: BossBar,
-        val timer: com.woxloi.questplugin.utils.STimer,
-        val questScoreboard: com.woxloi.questplugin.QuestScoreboard,
+        val timer: STimer,
+        val questScoreboard: QuestScoreboard,
         var deathCount: Int = 0,
         var originalLocation: Location,
-        val inventoryBackup: com.woxloi.questplugin.utils.ItemBackup.InventoryBackup?
+        var inventoryBackup: ItemBackup.InventoryBackup?,
+        var floorInstanceId: UUID?
     )
+
     data class QuestHistoryEntry(
         val questId: String,
         val questName: String,
@@ -104,6 +108,7 @@ object ActiveQuestManager {
             val maxLives = quest.maxLives ?: return Int.MAX_VALUE
 
             val partyMembers = if (quest.partyEnabled) {
+
                 PartyManager.getPartyMembers(player).distinctBy { it.uniqueId }
             } else {
                 listOf(player)
@@ -288,12 +293,19 @@ object ActiveQuestManager {
 
         val uuid = player.uniqueId
 
-        // ───────── 同じクエストが既に進行中かチェック ─────────
-        if (com.woxloi.questplugin.ActiveQuestManager.activeQuests.values.any { it.quest.id == quest.id }) {
-            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストは現在別のパーティーが進行中です。")
+        // ───────── 同じクエストが同一パーティーで進行中かチェック ─────────
+        if (activeQuests.any { (uuid, data) ->
+                data.quest.id == quest.id &&
+                        PartyManager.isSameParty(uuid, player.uniqueId)
+            }) {
+            player.sendMessage(QuestPlugin.prefix + "§c§lこのクエストは、すでにあなたのパーティーで進行中です。")
             return false
         }
-        if (com.woxloi.questplugin.ActiveQuestManager.activeQuests.containsKey(uuid)) return false
+
+        if (!quest.partyEnabled && activeQuests.containsKey(uuid)) {
+            player.sendMessage(QuestPlugin.prefix + "§c§lすでにクエストを進行中です。")
+            return false
+        }
 
         val partyMembers: List<Player> = if (quest.partyEnabled) {
 
@@ -423,6 +435,11 @@ object ActiveQuestManager {
 
         timer.start()
 
+        val floorInstance = QuestFloorManager.createInstance(
+            quest = quest,
+            partyMembers = partyMembers
+        )
+
         for (member in partyMembers) {
             // スコアボード表示
             val board = com.woxloi.questplugin.QuestScoreboard(member, quest).apply { show() }
@@ -446,6 +463,8 @@ object ActiveQuestManager {
                     originalLocation = member.location.clone(),
                     // もうメモリ上の InventoryBackup は不要なので null にする
                     inventoryBackup = null,
+                    floorInstanceId = floorInstance.instanceId
+
                 )
 
             bossBar.addPlayer(member)
@@ -481,10 +500,17 @@ object ActiveQuestManager {
             listOf(player)
         }
 
+        val leader = partyMembers.firstOrNull()
+
+        if (leader != null && leader.uniqueId == player.uniqueId) {
+            data.floorInstanceId?.let { QuestFloorManager.release(it) }
+        }
+
         for (member in partyMembers) {
             val file = File(plugin.dataFolder, "${member.uniqueId}_inv.yml")
             if (file.exists()) {
-                com.woxloi.questplugin.utils.ItemBackup.loadInventoryFromFile(member, file)
+                ItemBackup.loadInventoryFromFile(member, file)
+                file.delete()
             }
         }
 
@@ -493,10 +519,12 @@ object ActiveQuestManager {
             val memberData = com.woxloi.questplugin.ActiveQuestManager.activeQuests.remove(member.uniqueId)
             if (memberData != null) {
                 memberData.bossBar.removePlayer(member)
-                memberData.timer.stop()
+                if (leader?.uniqueId == member.uniqueId) {
+                    memberData.timer.stop()
+                }
                 memberData.questScoreboard.hide()
                 Bukkit.getScheduler().runTask(plugin, Runnable {
-                    player.gameMode = GameMode.SURVIVAL
+                    member.gameMode = GameMode.SURVIVAL
                 })
                 com.woxloi.questplugin.ActiveQuestManager.addQuestHistory(member.uniqueId, memberData, false)
             }
@@ -504,9 +532,8 @@ object ActiveQuestManager {
 
         com.woxloi.questplugin.ActiveQuestManager.saveQuestHistories()
 
-        // パーティーメンバー全員にkillコマンド（必要なら）
         for (member in partyMembers) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "kill ${member.name}")
+            member.health = 0.0
         }
 
         if (PartyManager.disbandParty(player)) {
@@ -531,20 +558,27 @@ object ActiveQuestManager {
         for (member in partyMembers) {
             val file = File(plugin.dataFolder, "${member.uniqueId}_inv.yml")
             if (file.exists()) {
-                com.woxloi.questplugin.utils.ItemBackup.loadInventoryFromFile(member, file)
+                ItemBackup.loadInventoryFromFile(member, file)
+                file.delete()
             }
         }
+
+        val leader = partyMembers.firstOrNull()
 
         // 全員のクエスト状態を削除＆処理
         for (member in partyMembers) {
             val memberData = com.woxloi.questplugin.ActiveQuestManager.activeQuests.remove(member.uniqueId)
             if (memberData != null) {
                 memberData.bossBar.removePlayer(member)
-                memberData.timer.stop()
+                if (leader?.uniqueId == member.uniqueId) {
+                    memberData.timer.stop()
+                }
                 memberData.questScoreboard.hide()
+
                 Bukkit.getScheduler().runTask(plugin, Runnable {
-                    player.gameMode = GameMode.SURVIVAL
+                    member.gameMode = GameMode.SURVIVAL
                 })
+
                 com.woxloi.questplugin.ActiveQuestManager.addQuestHistory(member.uniqueId, memberData, true)
                 member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト[${memberData.quest.name}]をクリアしました！")
 
