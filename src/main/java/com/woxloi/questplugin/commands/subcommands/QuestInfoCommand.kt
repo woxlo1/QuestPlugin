@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
+import com.woxloi.questplugin.floor.QuestFloorConfig
 import com.woxloi.questplugin.party.PartyManager
 
 class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
@@ -73,6 +74,15 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
             sender.sendMessage("§e§l最大回数: §f§l${it}回")
         }
         sender.sendMessage(text("§c§l[ここをクリックでクエスト開始コマンドを自動入力する]").clickEvent(suggestCommand("/quest start $questId")));
+
+        quest.floorId?.let { floorId ->
+            val floor = QuestFloorConfig.getFloor(floorId)
+            val sizeX = floor.max.blockX - floor.min.blockX + 1
+            val sizeY = floor.max.blockY - floor.min.blockY + 1
+            val sizeZ = floor.max.blockZ - floor.min.blockZ + 1
+
+            sender.sendMessage("  §7§lサイズ: §f${sizeX}x${sizeY}x${sizeZ}")
+        }
 
         if (quest.partyEnabled) {
             sender.sendMessage("§e§lパーティー対応: §a§l有効")

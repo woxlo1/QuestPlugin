@@ -26,11 +26,18 @@ class QuestWandCommand : CommandExecutor {
         val wand = ItemStack(Material.STICK)
         val meta = wand.itemMeta ?: return true
 
-        meta.setDisplayName("§e§lQuest Floor Wand")
+        meta.setDisplayName("§e§l範囲選択用ワンド")
         meta.lore = listOf(
             "§7クエストフロア範囲選択用",
             "§7左クリック: 始点",
-            "§7右クリック: 終点",
+            "§7右クリック: 終点"
+        )
+
+        // QuestWand タグ
+        meta.persistentDataContainer.set(
+            QuestPlugin.questWandKey,
+            PersistentDataType.BYTE,
+            1
         )
 
         wand.itemMeta = meta
@@ -40,3 +47,4 @@ class QuestWandCommand : CommandExecutor {
         return true
     }
 }
+
