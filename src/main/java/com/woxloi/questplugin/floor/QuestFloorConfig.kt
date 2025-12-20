@@ -26,6 +26,10 @@ object QuestFloorConfig {
         config.save(file)
     }
 
+    fun exists(id: String): Boolean {
+        return config.isConfigurationSection("floors.$id")
+    }
+
     fun getFloor(id: String): Floor {
         val sec = config.getConfigurationSection("floors.$id")
             ?: error("Floor $id が存在しません")

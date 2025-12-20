@@ -41,6 +41,7 @@ object QuestConfigManager {
             val shareCompletion = q.getBoolean("shareCompletion", false)
             val partyMaxMembers = q.getInt("partyMaxMembers", -1)
 
+            val floorId = q.getString("floorId")
 
             // 追加: テレポート先の読み込み（null許容）
             val teleportWorld = q.getString("teleportWorld")
@@ -63,6 +64,8 @@ object QuestConfigManager {
                 shareProgress = shareProgress,
                 shareCompletion = shareCompletion,
                 partyMaxMembers = if (partyMaxMembers >= 0) partyMaxMembers else null,
+
+                floorId = floorId,
 
                 teleportWorld = teleportWorld,
                 teleportX = teleportX,
@@ -96,6 +99,7 @@ object QuestConfigManager {
             root.set("$path.shareProgress", data.shareProgress)
             root.set("$path.shareCompletion", data.shareCompletion)
 
+            root.set("$path.floorId", data.floorId)
             // 追加: テレポート先の保存
             root.set("$path.teleportWorld", data.teleportWorld)
             root.set("$path.teleportX", data.teleportX)

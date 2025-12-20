@@ -195,6 +195,18 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("config"))
                 .addArgument(SCommandArgument().addAllowedString("set"))
                 .addArgument(SCommandArgument().addAlias("クエスト名"))
+                .addArgument(SCommandArgument().addAllowedString("floorid"))
+                .addArgument(SCommandArgument().addAlias("フロア名"))
+                .addRequiredPermission("quest.config.floorid")
+                .addExplanation("クエスト完了時のテレポート先ワールドを設定する")
+                .setExecutor(QuestSetCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("config"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAlias("クエスト名"))
                 .addArgument(SCommandArgument().addAllowedString("teleportx"))
                 .addArgument(SCommandArgument().addAlias("テレポートX座標"))
                 .addRequiredPermission("quest.config.teleportx")

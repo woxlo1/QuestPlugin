@@ -15,11 +15,22 @@ repositories {
 
 dependencies {
     compileOnly fileTree(dir: 'libs', include: '*.jar')
+
     compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
-    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    compileOnly "io.lumine:Mythic-Dist:5.0.4-SNAPSHOT"
-    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
+
+    // Kotlin
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+    // MythicMobs（これが正解）
+    compileOnly("io.lumine:MythicBukkit:5.7.1")
+
+    // Vault
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+
+    // Adventure
     implementation("net.kyori:adventure-platform-bukkit:4.3.1")
+
+    // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 }
 

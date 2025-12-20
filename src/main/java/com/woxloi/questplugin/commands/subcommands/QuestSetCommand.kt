@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.*
+import com.woxloi.questplugin.floor.QuestFloorConfig
 
 class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
@@ -47,6 +48,29 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
                 "sharecompletion"->quest.shareCompletion= bool() ?: return sender.fail("true/false を指定")
                 "partymaxmembers"-> quest.partyMaxMembers =
                     value.toInt().positive() ?: return sender.fail("partyMaxMembersは正の整数")
+
+                "floorid" -> {
+
+                    if (value.isBlank()) {
+                        return sender.fail("floorid を指定してください（解除する場合は 'none'）")
+                    }
+
+                    // 解除
+                    if (value.equals("none", ignoreCase = true)) {
+                        quest.floorId = null
+                        sender.sendMessage(
+                            QuestPlugin.prefix + "§a§lフロア設定を解除しました"
+                        )
+                        return true
+                    }
+
+                    // 存在チェック
+                    if (!QuestFloorConfig.exists(value)) {
+                        return sender.fail("そのようなフロア名は存在しません")
+                    }
+
+                    quest.floorId = value
+                }
 
                 "teleportworld" -> quest.teleportWorld = value
                 "teleportx"     -> quest.teleportX     = value.toDoubleOrNull() ?: return sender.fail("X座標が数値ではありません")

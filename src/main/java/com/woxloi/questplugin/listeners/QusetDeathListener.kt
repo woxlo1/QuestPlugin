@@ -9,6 +9,7 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestPlugin
+import com.woxloi.questplugin.floor.QuestFloorManager
 import com.woxloi.questplugin.party.PartyManager
 
 class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
@@ -56,16 +57,33 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             }
 
             if (allDead) {
+                val instance = QuestFloorManager.getInstanceByPlayer(player)
+
+                if (instance != null) {
+                    QuestFloorManager.clearMythic(instance)
+                    QuestFloorManager.release(instance.instanceId)
+                }
+
                 partyMembers.forEach {
-                    com.woxloi.questplugin.ActiveQuestManager.cancelQuest(it)
-                    it.sendMessage(QuestPlugin.prefix + "§c§lパーティーメンバー全員が死亡したため、クエストを終了します。")
+                    ActiveQuestManager.cancelQuest(it)
+                    it.sendMessage(
+                        QuestPlugin.prefix +
+                                "§c§lパーティーメンバー全員が死亡したため、クエストを終了します。"
+                    )
                 }
             }
+
         } else {
             // ソロプレイヤーが死亡しきった場合
             if ((quest.maxLives ?: 0) <= data.deathCount) {
-                com.woxloi.questplugin.ActiveQuestManager.cancelQuest(player)
-                player.sendMessage(QuestPlugin.prefix + "§c§lライフ切れのためクエストを終了しました。")
+                val instance = QuestFloorManager.getInstanceByPlayer(player)
+
+                if (instance != null) {
+                    QuestFloorManager.clearMythic(instance)
+                    QuestFloorManager.release(instance.instanceId)
+                }
+
+                ActiveQuestManager.cancelQuest(player)
             }
         }
 
