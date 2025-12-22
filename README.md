@@ -199,3 +199,6 @@ MIT License
 - WorldEdit
 - WorldGuard
 ---
+
+## 使用させてもらった外部プラグイン
+- https://github.com/shojabon/McUtils
