@@ -4,6 +4,7 @@ version: 1.0
 api-version: 1.19
 depend: [MythicMobs]
 softdepend: [Vault]
+website: https://github.com/woxlo1/QuestPlugin
 authors:
   - woxloi
 commands:
