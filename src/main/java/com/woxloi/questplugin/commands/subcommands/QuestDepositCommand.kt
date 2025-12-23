@@ -34,7 +34,7 @@ class QuestDepositCommand : CommandExecutor {
         val ok = vault.deposit(target.uniqueId, amount)
 
         if (ok) {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name} に $amount 円を付与しました。")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}に${amount}円を付与しました。")
         } else {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l付与に失敗しました。")
         }

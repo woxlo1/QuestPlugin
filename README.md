@@ -19,7 +19,8 @@ Minecraftサーバー用のクエスト管理プラグインです。
 ## インストール
 
 1. プラグインのjarファイルを `plugins` フォルダに入れる
-2. サーバーを起動し、`plugins/QuestPlugin` フォルダが生成されるのを確認
+2. `plugins/QuestPlugin`のフォルダを手動作成し`config.yml`のファイルを作成する
+2. サーバーを起動する
 3. `quests.yml` でクエスト設定を管理
 
 ---
@@ -49,7 +50,7 @@ Minecraftサーバー用のクエスト管理プラグインです。
 | `/quest config set <ID> teleporty <Y座標>`              | テレポート先のY座標を設定する  | `quest.config.teleporty`       |
 | `/quest config set <ID> teleportz <Z座標>`              | テレポート先のZ座標を設定する  | `quest.config.teleportz`       |
 | `/quest config save`                                  | クエスト設定を保存する      | `quest.config.save`            |
-
+| `/quest wand`                                         | 範囲指定用ワンドを取得する    | `quest.wand`                   |
 ---
 
 ### 🚀 クエスト実行コマンド
@@ -93,7 +94,6 @@ Minecraftサーバー用のクエスト管理プラグインです。
 |---------|------|------|
 | `/quest logop <player> <ページ数>` | 指定プレイヤーのクエスト履歴を確認する | `quest.logop` |
 
-
 ## クエスト設定項目
 
 | key               | 説明                       | 例                                 |
@@ -118,7 +118,7 @@ Minecraftサーバー用のクエスト管理プラグインです。
 | `teleportY`       | 指定したY座標に飛ばす              | `64`                              |
 | `teleportZ`       | 指定したZ座標に飛ばす              | `0`                               |
 ```yaml
-quests:
+quests:                          # コマンドで読みだす時の名前
   test:
     name: "ドラゴン討伐"
     type: "KILL"                 # クエストのタイプ
@@ -191,8 +191,7 @@ MIT License
 
 ## 補足
 
-- `%player%` は報酬コマンド内でプレイヤー名に置換されます
-- `quests.yml` は手動編集も可能です（フォーマットに注意してください）
+- スタートコマンドや報酬コマンドの設定ができるコマンドは用意していないので手動操作でお願いします
 - 導入必須プラグイン
 - MythicMobs
 - Vault

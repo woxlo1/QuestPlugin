@@ -118,8 +118,8 @@ class QuestPartyCommand : CommandExecutor {
         }
         val result = PartyManager.invitePlayer(player, target)
         if (result == PartyManager.InviteResult.SUCCESS) {
-            player.sendMessage(QuestPlugin.PartyPrefix + "§a§l${target.name} をパーティーに招待しました。")
-            target.sendMessage(text(QuestPlugin.PartyPrefix + "§e§l${player.name} からパーティーに招待されました").clickEvent(suggestCommand("/quest party join ${player.name}"))
+            player.sendMessage(QuestPlugin.PartyPrefix + "§a§l${target.name}をパーティーに招待しました。")
+            target.sendMessage(text(QuestPlugin.PartyPrefix + "§e§l${player.name}からパーティーに招待されました").clickEvent(suggestCommand("/quest party join ${player.name}"))
             )
         } else {
             player.sendMessage(QuestPlugin.PartyPrefix + "§c§l招待に失敗しました。")
@@ -139,7 +139,7 @@ class QuestPartyCommand : CommandExecutor {
         val result = PartyManager.joinParty(player, leader)
         if (result == PartyManager.JoinResult.SUCCESS) {
             player.sendMessage(QuestPlugin.PartyPrefix + "§a§lパーティーに参加しました。")
-            leader.sendMessage(QuestPlugin.PartyPrefix + "§e§l${player.name} がパーティーに参加しました。")
+            leader.sendMessage(QuestPlugin.PartyPrefix + "§e§l${player.name}がパーティーに参加しました。")
         } else {
             player.sendMessage(QuestPlugin.PartyPrefix + "§c§lパーティーへの参加に失敗しました。")
         }
@@ -185,7 +185,7 @@ class QuestPartyCommand : CommandExecutor {
             return
         }
         if (PartyManager.kickMember(player, target)) {
-            player.sendMessage(QuestPlugin.PartyPrefix + "§a§l${target.name} をパーティーから追放しました。")
+            player.sendMessage(QuestPlugin.PartyPrefix + "§a§l${target.name}をパーティーから追放しました。")
             target.sendMessage(QuestPlugin.PartyPrefix + "§c§lあなたはパーティーから追放されました。")
         } else {
             player.sendMessage(QuestPlugin.PartyPrefix + "§c§l追放に失敗しました。")

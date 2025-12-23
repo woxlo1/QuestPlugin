@@ -11,6 +11,7 @@ import com.woxloi.questplugin.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
 import com.woxloi.questplugin.floor.QuestFloorConfig
 import com.woxloi.questplugin.party.PartyManager
+import net.kyori.adventure.text.event.ClickEvent.runCommand
 
 class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
@@ -20,7 +21,7 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
         val quest = QuestConfigManager.getQuest(questId)
 
         if (quest == null) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト「$questId」が見つかりません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${questId}が見つかりません。")
             return true
         }
 
@@ -99,6 +100,7 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
         if (quest.teleportWorld != null) {
             sender.sendMessage("§e§lテレポート先: §f§l${quest.teleportWorld} (${quest.teleportX}, ${quest.teleportY}, ${quest.teleportZ})")
+            sender.sendMessage( text("&c&l[ここをクリックでテレポート先に自動でテレポートする]") .clickEvent(runCommand("/execute in ${quest.teleportWorld} run tp ${sender.name} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ}")) )
         }
 
 

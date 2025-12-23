@@ -35,7 +35,7 @@ class QuestWithdrawCommand : CommandExecutor {
         val ok = vault.withdraw(target.uniqueId, amount)
 
         if (ok) {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name} から $amount 円を引き出しました。")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}から${amount}円を引き出しました。")
         } else {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l引き出しに失敗しました")
         }

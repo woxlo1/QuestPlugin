@@ -19,7 +19,7 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val targetName = args[1]
         val targetPlayer = Bukkit.getOfflinePlayer(targetName)
         if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline)) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー「$targetName」は存在しません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー" + targetName + "は存在しません。")
             return true
         }
 
@@ -46,7 +46,7 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val uuidStr = uuid.toString()
         val questLogsRaw = historiesSection.getMapList(uuidStr)
         if (questLogsRaw.isNullOrEmpty()) {
-            sender.sendMessage(QuestPlugin.prefix + "§e§l$targetName のクエスト履歴はありません。")
+            sender.sendMessage(QuestPlugin.prefix + "§e§l" + targetName + "のクエスト履歴はありません。")
             return true
         }
 
@@ -68,7 +68,7 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val pageSize = 10
         val maxPage = (logs.size + pageSize - 1) / pageSize
         if (page > maxPage) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lページ番号が範囲外です。最大ページ: $maxPage")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lそのようなページ番号は存在しません。")
             return true
         }
 
@@ -81,16 +81,35 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
             sender.sendMessage("§e§l・ ${logs[i]}")
         }
 
-        if (page < maxPage) {
-            val nextPageCmd = "/quest logop $targetName ${page + 1}"
-            if (sender is org.bukkit.entity.Player) {
-                val message = Component.text("§7§l<<<ここをクリックで次のページ表示>>>")
+        if (sender is org.bukkit.entity.Player) {
+            val components = mutableListOf<Component>()
+
+            if (page > 1) {
+                val prevPageCmd = "/quest logop $targetName ${page - 1}"
+                val prev = Component.text("§b§l<<< 前のページへ")
+                    .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand(prevPageCmd))
+                components.add(prev)
+            }
+
+            if (page < maxPage) {
+                val nextPageCmd = "/quest logop $targetName ${page + 1}"
+                val next = Component.text("§b§l次のページへ >>>")
                     .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand(nextPageCmd))
-                sender.sendMessage(message)
-            } else {
-                sender.sendMessage("§7§l次のページを見るには $nextPageCmd を入力してください。")
+                components.add(next)
+            }
+
+            // スペースで区切って表示
+            val navigation = Component.join(Component.text("     "), components)
+            sender.sendMessage(navigation)
+        } else {
+            if (page > 1) {
+                sender.sendMessage("§7§l前のページを見るには /quest logop $targetName ${page - 1} を入力してください。")
+            }
+            if (page < maxPage) {
+                sender.sendMessage("§7§l次のページを見るには /quest logop $targetName ${page + 1} を入力してください。")
             }
         }
+
 
         return true
     }

@@ -31,7 +31,7 @@ class QuestStartCommand(private val plugin: JavaPlugin) : CommandExecutor {
             sender.sendMessage(QuestPlugin.prefix + "§c§lクエストをスタートできませんでした")
             return true
         }
-        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト「${quest.name}」を開始しました！")
+        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト${quest.name}を開始しました！")
         return true
     }
 }
