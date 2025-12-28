@@ -376,7 +376,7 @@ class QuestCommand : SCommandRouter() {
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("list"))
-                .addRequiredPermission("quest.use")
+                .addRequiredPermission("quest.list")
                 .addExplanation("現在使用可能なクエストを見る")
                 .setExecutor(QuestListCommand(plugin))
         )

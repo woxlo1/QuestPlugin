@@ -435,10 +435,12 @@ object ActiveQuestManager {
 
         timer.start()
 
-        val floorInstance = QuestFloorManager.createInstance(
+        QuestFloorManager.createInstance(
             quest = quest,
-            partyMembers = partyMembers
+            members = partyMembers
         )
+
+        val instanceId = QuestFloorManager.getInstanceByPlayer(player)
 
         for (member in partyMembers) {
             // スコアボード表示
@@ -463,7 +465,7 @@ object ActiveQuestManager {
                     originalLocation = member.location.clone(),
                     // もうメモリ上の InventoryBackup は不要なので null にする
                     inventoryBackup = null,
-                    floorInstanceId = floorInstance.instanceId
+                    floorInstanceId = instanceId
 
                 )
 
@@ -652,7 +654,7 @@ object ActiveQuestManager {
 
         data.bossBar.progress = progress.toDouble()
 
-        val barName = "§e${data.quest.name} §7- ${data.quest.type.displayName}\n" +
+        val barName = "§e${data.quest.name} §7- ${data.quest.type.displayName}" +
                 "§b${data.quest.target} を ${data.progress} / ${data.quest.amount} $action"
         data.bossBar.setTitle(barName)
     }

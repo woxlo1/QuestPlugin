@@ -28,7 +28,7 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
         val remainingLives = maxLives - data.deathCount
 
         if (remainingLives > 0) {
-            player.sendMessage(QuestPlugin.prefix + "§c§l残りライフ: §f$remainingLives")
+            player.sendMessage(QuestPlugin.prefix + "§c§l残りライフ§f$remainingLives")
         } else {
             player.sendMessage(QuestPlugin.prefix + "§c§lあなたは死んだ")
 
@@ -39,7 +39,7 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             if (quest.partyEnabled) {
                 val partyMembers = PartyManager.getPartyMembers(player).filter { it.uniqueId != uuid }
                 partyMembers.forEach {
-                    it.sendMessage(QuestPlugin.prefix + "§e§l${player.name}さんがライフ切れで脱落しました。")
+                    it.sendMessage(QuestPlugin.prefix + "§e§l${player.name}さんがライフ切れで脱落しました...")
                 }
             }
         }
@@ -59,17 +59,15 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             if (allDead) {
                 val instance = QuestFloorManager.getInstanceByPlayer(player)
 
-                if (instance != null) {
-                    QuestFloorManager.clearMythic(instance)
-                    QuestFloorManager.release(instance.instanceId)
+                val instanceId = QuestFloorManager.getInstanceByPlayer(player)
+
+                if (instanceId != null) {
+                    QuestFloorManager.release(instanceId)
                 }
 
                 partyMembers.forEach {
                     ActiveQuestManager.cancelQuest(it)
-                    it.sendMessage(
-                        QuestPlugin.prefix +
-                                "§c§lパーティーメンバー全員が死亡したため、クエストを終了します。"
-                    )
+                    it.sendMessage(QuestPlugin.prefix + "§c§l全滅した...")
                 }
             }
 
@@ -78,12 +76,14 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             if ((quest.maxLives ?: 0) <= data.deathCount) {
                 val instance = QuestFloorManager.getInstanceByPlayer(player)
 
-                if (instance != null) {
-                    QuestFloorManager.clearMythic(instance)
-                    QuestFloorManager.release(instance.instanceId)
+                val instanceId = QuestFloorManager.getInstanceByPlayer(player)
+
+                if (instanceId != null) {
+                    QuestFloorManager.release(instanceId)
                 }
 
                 ActiveQuestManager.cancelQuest(player)
+                player.sendMessage(QuestPlugin.prefix + "§c§lあなたは死んだ")
             }
         }
 

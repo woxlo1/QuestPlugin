@@ -2,7 +2,6 @@ package com.woxloi.questplugin.floor
 
 import com.sk89q.worldedit.WorldEdit
 import com.sk89q.worldedit.bukkit.BukkitAdapter
-import com.sk89q.worldedit.extent.clipboard.Clipboard
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats
 import com.sk89q.worldedit.function.operation.Operations
 import com.sk89q.worldedit.math.BlockVector3
@@ -12,8 +11,6 @@ import com.sk89q.worldguard.protection.flags.Flags
 import com.sk89q.worldguard.protection.flags.StateFlag
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion
 import com.woxloi.questplugin.QuestData
-import io.lumine.mythic.bukkit.MythicBukkit
-import io.lumine.mythic.core.utils.placeholders.PlaceholderInt
 import org.bukkit.*
 import org.bukkit.block.Sign
 import org.bukkit.entity.Player
@@ -21,6 +18,15 @@ import java.io.File
 import java.util.*
 
 object QuestFloorManager {
+
+    data class FloorSpawner(
+        val x: Int,
+        val y: Int,
+        val z: Int,
+        val mobId: String,
+        val amount: Int,
+        val radius: Int
+    )
 
     data class FloorInstance(
         val instanceId: UUID,
@@ -37,32 +43,25 @@ object QuestFloorManager {
     private val activeInstances = mutableMapOf<UUID, FloorInstance>()
     private const val SPACING = 400
 
-    // =====================================================
+    // ===============================
     // フロア生成
-    // =====================================================
-    fun createInstance(
-        quest: QuestData,
-        partyMembers: List<Player>
-    ): FloorInstance {
+    // ===============================
+    fun createInstance(quest: QuestData, members: List<Player>): FloorInstance {
+
+        val floorId = quest.floorId ?: error("Quest floorId is null")
+        val floor = QuestFloorConfig.getFloor(floorId)
+        val world = Bukkit.getWorld(floor.world)
+            ?: error("World ${floor.world} not found")
 
         val instanceId = UUID.randomUUID()
-        val floorId = quest.floorId
-            ?: error("Quest ${quest.id} に floorId が設定されていません")
-
-        val floorConfig = QuestFloorConfig.getFloor(floorId)
-        val world = Bukkit.getWorld(floorConfig.world)
-            ?: error("World ${floorConfig.world} が存在しません")
-
         val origin = getNextOrigin(world)
-        pasteFloor(floorConfig.schematicFile, origin)
 
-        val min = floorConfig.min.add(origin.blockX, origin.blockY, origin.blockZ)
-        val max = floorConfig.max.add(origin.blockX, origin.blockY, origin.blockZ)
+        pasteFloor(floor.schematicFile, origin)
+
+        val min = floor.min.add(origin.blockX, origin.blockY, origin.blockZ)
+        val max = floor.max.add(origin.blockX, origin.blockY, origin.blockZ)
 
         val spawners = scanSpawnerSigns(world, min, max)
-
-        createWorldGuardRegion(instanceId, world, min, max, partyMembers)
-        spawnMythicSpawners(instanceId, spawners, world)
 
         val instance = FloorInstance(
             instanceId,
@@ -72,72 +71,57 @@ object QuestFloorManager {
             origin,
             min,
             max,
-            partyMembers.first().uniqueId,
+            members.first().uniqueId,
             spawners
         )
 
         activeInstances[instanceId] = instance
 
-        partyMembers.forEach {
+        createWorldGuardRegion(instanceId, world, min, max, members)
+
+        members.forEach {
             it.teleport(origin.clone().add(0.5, 1.0, 0.5))
         }
 
         return instance
     }
 
-    // =====================================================
-    // フロア解放
-    // =====================================================
-    fun release(instanceId: UUID) {
-        val instance = activeInstances.remove(instanceId) ?: return
-        clearMythic(instance)
-        removeWorldGuardRegion(instance)
-        clearArea(instance)
-    }
-
-    // =====================================================
-    // プレイヤー → インスタンス取得
-    // =====================================================
+    // ===============================
+    // Instance取得
+    // ===============================
     fun getInstanceByPlayer(player: Player): UUID? {
-        val loc = player.location
+        val l = player.location
         return activeInstances.values.firstOrNull {
-            it.world == loc.world &&
-                    loc.blockX in it.min.blockX..it.max.blockX &&
-                    loc.blockY in it.min.blockY..it.max.blockY &&
-                    loc.blockZ in it.min.blockZ..it.max.blockZ
+            it.world == l.world &&
+                    l.blockX in it.min.blockX..it.max.blockX &&
+                    l.blockY in it.min.blockY..it.max.blockY &&
+                    l.blockZ in it.min.blockZ..it.max.blockZ
         }?.instanceId
     }
 
-    fun getInstance(id: UUID): FloorInstance? = activeInstances[id]
-
-    // =====================================================
-    // 内部処理
-    // =====================================================
-    private fun getNextOrigin(world: World): Location {
-        val index = activeInstances.size
-        return Location(world, index * SPACING.toDouble(), 64.0, 0.0)
-    }
-
+    // ===============================
+    // Schematic
+    // ===============================
     private fun pasteFloor(file: File, origin: Location) {
-        val format = ClipboardFormats.findByFile(file)
-            ?: error("不明な schematic 形式")
+        val format = ClipboardFormats.findByFile(file)!!
+        val clipboard = format.getReader(file.inputStream()).read()
 
-        val clipboard: Clipboard = format.getReader(file.inputStream()).use { it.read() }
-        val session = WorldEdit.getInstance().newEditSession(BukkitAdapter.adapt(origin.world))
+        val session = WorldEdit.getInstance()
+            .newEditSession(BukkitAdapter.adapt(origin.world))
 
-        val operation = ClipboardHolder(clipboard)
+        val op = ClipboardHolder(clipboard)
             .createPaste(session)
             .to(BlockVector3.at(origin.blockX, origin.blockY, origin.blockZ))
             .ignoreAirBlocks(false)
             .build()
 
-        Operations.complete(operation)
+        Operations.complete(op)
         session.close()
     }
 
-    // =====================================================
-    // Spawner看板
-    // =====================================================
+    // ===============================
+    // Spawner看板読み取り（保存のみ）
+    // ===============================
     private fun scanSpawnerSigns(
         world: World,
         min: BlockVector3,
@@ -146,117 +130,58 @@ object QuestFloorManager {
 
         val list = mutableListOf<FloorSpawner>()
 
-        for (x in min.blockX..max.blockX) {
-            for (y in min.blockY..max.blockY) {
+        for (x in min.blockX..max.blockX)
+            for (y in min.blockY..max.blockY)
                 for (z in min.blockZ..max.blockZ) {
+
                     val state = world.getBlockAt(x, y, z).state
                     if (state is Sign && state.getLine(0).equals("[Spawner]", true)) {
                         list.add(
                             FloorSpawner(
                                 x, y, z,
                                 state.getLine(1),
-                                state.getLine(2).toIntOrNull() ?: 5,
-                                state.getLine(3).toIntOrNull() ?: 1
+                                state.getLine(2).toIntOrNull() ?: 1,
+                                state.getLine(3).toIntOrNull() ?: 5
                             )
                         )
                         state.block.type = Material.AIR
                     }
                 }
-            }
-        }
+
         return list
     }
 
-    // =====================================================
-    // MythicSpawner生成（正規API）
-    // =====================================================
-    private fun spawnMythicSpawners(
-        instanceId: UUID,
-        spawners: List<FloorSpawner>,
-        world: World
-    ) {
-        val manager = MythicBukkit.inst().spawnerManager
-
-        spawners.forEach { s ->
-            val loc = Location(
-                world,
-                s.x.toDouble() + 0.5,
-                s.y.toDouble(),
-                s.z.toDouble() + 0.5
-            )
-
-            val name = "quest_${instanceId}_${s.x}_${s.y}_${s.z}"
-
-            val spawner = manager.createSpawner(
-                name,
-                BukkitAdapter.adapt(loc),
-                s.mobId
-            )
-
-            spawner.spawnRadius = s.radius.toDouble()
-            spawner.maxMobs = PlaceholderInt.of(s.amount)
-            spawner.start()
-        }
+    // ===============================
+    // クリーンアップ
+    // ===============================
+    fun release(instanceId: UUID) {
+        val instance = activeInstances.remove(instanceId) ?: return
+        removeWorldGuardRegion(instance)
+        clearArea(instance)
     }
 
-    // =====================================================
-    // Mythic全削除（インスタンス限定）
-    // =====================================================
-    private fun clearMythic(instance: FloorInstance) {
-        val manager = MythicBukkit.inst().spawnerManager
-        val prefix = "quest_${instance.instanceId}_"
-
-        manager.allSpawners
-            .filter { it.internalName.startsWith(prefix) }
-            .forEach {
-                it.stop()
-                manager.removeSpawner(it.internalName)
-            }
-
-        instance.world.livingEntities
-            .filter { MythicBukkit.inst().mobManager.isMythicMob(it) }
-            .filter {
-                val l = it.location
-                l.blockX in instance.min.blockX..instance.max.blockX &&
-                        l.blockY in instance.min.blockY..instance.max.blockY &&
-                        l.blockZ in instance.min.blockZ..instance.max.blockZ
-            }
-            .forEach { it.remove() }
-    }
-
-    // =====================================================
-    // エリア削除
-    // =====================================================
-    private fun clearArea(instance: FloorInstance) {
-        val w = instance.world
-        for (x in instance.min.blockX..instance.max.blockX)
-            for (y in instance.min.blockY..instance.max.blockY)
-                for (z in instance.min.blockZ..instance.max.blockZ)
-                    w.getBlockAt(x, y, z).type = Material.AIR
-    }
-
-    // =====================================================
+    // ===============================
     // WorldGuard
-    // =====================================================
+    // ===============================
     private fun createWorldGuardRegion(
-        instanceId: UUID,
+        id: UUID,
         world: World,
         min: BlockVector3,
         max: BlockVector3,
-        members: List<Player>
+        players: List<Player>
     ) {
         val manager = WorldGuard.getInstance()
             .platform.regionContainer
             .get(BukkitAdapter.adapt(world)) ?: return
 
-        val region = ProtectedCuboidRegion("quest_$instanceId", min, max)
+        val region = ProtectedCuboidRegion("quest_$id", min, max)
 
         region.setFlag(Flags.PVP, StateFlag.State.DENY)
         region.setFlag(Flags.BLOCK_BREAK, StateFlag.State.DENY)
         region.setFlag(Flags.BLOCK_PLACE, StateFlag.State.DENY)
-        region.setFlag(Flags.ENTRY, StateFlag.State.DENY)
 
-        members.forEach { region.owners.addPlayer(it.uniqueId) }
+        players.forEach { region.owners.addPlayer(it.uniqueId) }
+
         manager.addRegion(region)
     }
 
@@ -264,6 +189,19 @@ object QuestFloorManager {
         val manager = WorldGuard.getInstance()
             .platform.regionContainer
             .get(BukkitAdapter.adapt(instance.world)) ?: return
+
         manager.removeRegion("quest_${instance.instanceId}")
+    }
+
+    private fun getNextOrigin(world: World): Location {
+        return Location(world, activeInstances.size * SPACING.toDouble(), 64.0, 0.0)
+    }
+
+    private fun clearArea(instance: FloorInstance) {
+        val w = instance.world
+        for (x in instance.min.blockX..instance.max.blockX)
+            for (y in instance.min.blockY..instance.max.blockY)
+                for (z in instance.min.blockZ..instance.max.blockZ)
+                    w.getBlockAt(x, y, z).type = Material.AIR
     }
 }

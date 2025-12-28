@@ -61,7 +61,7 @@ class QuestScoreboard(private val player: Player, private val quest: QuestData) 
             for (member in partyMembers) {
                 val currentHP = member.health.toInt()
                 val maxHP = member.maxHealth.toInt()
-                scoreboard.setText(index++, "§f${member.name} §d♥§7$currentHP")
+                scoreboard.setText(index++, "§f§l${member.name} §d§l♥§7§l$currentHP")
             }
         }
 
@@ -69,7 +69,7 @@ class QuestScoreboard(private val player: Player, private val quest: QuestData) 
         if (remainingTimeSeconds != null) {
             val min = remainingTimeSeconds!! / 60
             val sec = remainingTimeSeconds!! % 60
-            scoreboard.setText(index++, "§c§l制限時間: §f%02d:%02d".format(min, sec))
+            scoreboard.setText(index++, "§c§l残り時間: §f%02d:%02d".format(min, sec))
         }
 
         scoreboard.renderText()

@@ -23,6 +23,7 @@ class QuestPlugin : JavaPlugin() {
         questWandKey = NamespacedKey(this, "quest_wand")
 
         saveDefaultConfig()
+
         QuestConfigManager.loadAllQuests()
         ActiveQuestManager.init()
         commandRouter = QuestCommand()
