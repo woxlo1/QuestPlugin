@@ -11,7 +11,8 @@ repositories {
     mavenCentral()
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://jitpack.io' }
-    maven { url = 'https://mvn.lumine.io/repository/maven-public/' } // Mythic API
+    maven { url = 'https://mvn.lumine.io/repository/maven-public/' }// Mythic API
+    maven { url = 'https://maven.enginehub.org/repo/' }
 }
 
 dependencies {
@@ -21,7 +22,7 @@ dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    // MythicBukkit API（正しい依存）
+    // MythicBukkit API
     compileOnly "io.lumine:Mythic-Dist:5.7.1"
 
     // Vault
@@ -33,8 +34,12 @@ dependencies {
     // Coroutine
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
 
-    // libs フォルダの jar（任意）
-    compileOnly fileTree(dir: 'libs', include: '*.jar')
+    // WorldEdit / WorldGuard
+    compileOnly "com.sk89q.worldedit:worldedit-bukkit:7.2.14"
+    compileOnly "com.sk89q.worldguard:worldguard-bukkit:7.0.9"
+
+    // libs フォルダの jar
+    implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
 def targetJavaVersion = 17
