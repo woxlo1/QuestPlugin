@@ -72,10 +72,10 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
                     quest.floorId = value
                 }
 
-                "teleportworld" -> quest.teleportWorld = value
-                "teleportx"     -> quest.teleportX     = value.toDoubleOrNull() ?: return sender.fail("X座標が数値ではありません")
-                "teleporty"     -> quest.teleportY     = value.toDoubleOrNull() ?: return sender.fail("Y座標が数値ではありません")
-                "teleportz"     -> quest.teleportZ     = value.toDoubleOrNull() ?: return sender.fail("Z座標が数値ではありません")
+                //"teleportworld" -> quest.teleportWorld = value
+                //"teleportx"     -> quest.teleportX     = value.toDoubleOrNull() ?: return sender.fail("X座標が数値ではありません")
+                //"teleporty"     -> quest.teleportY     = value.toDoubleOrNull() ?: return sender.fail("Y座標が数値ではありません")
+                //"teleportz"     -> quest.teleportZ     = value.toDoubleOrNull() ?: return sender.fail("Z座標が数値ではありません")
 
                 else -> return sender.fail("設定できないキーです。")
             }

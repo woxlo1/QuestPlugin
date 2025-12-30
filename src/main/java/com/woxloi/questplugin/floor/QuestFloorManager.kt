@@ -37,8 +37,20 @@ object QuestFloorManager {
         val min: BlockVector3,
         val max: BlockVector3,
         val partyLeader: UUID,
-        val spawners: List<FloorSpawner>
+        val spawners: List<FloorSpawner>,
+        val markers: List<FloorMarker>
     )
+
+    data class FloorMarker(
+        val type: MarkerType,
+        val location: Location
+    )
+
+    enum class MarkerType {
+        SPAWN,
+        GOAL,
+        NEXT
+    }
 
     private val activeInstances = mutableMapOf<UUID, FloorInstance>()
     private const val SPACING = 400
@@ -46,6 +58,7 @@ object QuestFloorManager {
     // ===============================
     // フロア生成
     // ===============================
+
     fun createInstance(quest: QuestData, members: List<Player>): FloorInstance {
 
         val floorId = quest.floorId ?: error("Quest floorId is null")
@@ -62,6 +75,7 @@ object QuestFloorManager {
         val max = floor.max.add(origin.blockX, origin.blockY, origin.blockZ)
 
         val spawners = scanSpawnerSigns(world, min, max)
+        val markers = scanMarkers(world, min, max) // ← ★追加
 
         val instance = FloorInstance(
             instanceId,
@@ -72,15 +86,20 @@ object QuestFloorManager {
             min,
             max,
             members.first().uniqueId,
-            spawners
+            spawners,
+            markers
         )
 
         activeInstances[instanceId] = instance
 
         createWorldGuardRegion(instanceId, world, min, max, members)
 
+        // ===== スポーン処理 =====
+        val spawn = markers.firstOrNull { it.type == MarkerType.SPAWN }
+            ?: error("Spawn marker not found")
+
         members.forEach {
-            it.teleport(origin.clone().add(0.5, 1.0, 0.5))
+            it.teleport(spawn.location.clone().add(0.5, 1.0, 0.5))
         }
 
         return instance
@@ -204,4 +223,43 @@ object QuestFloorManager {
                 for (z in instance.min.blockZ..instance.max.blockZ)
                     w.getBlockAt(x, y, z).type = Material.AIR
     }
+
+    // ===============================
+    // スキャン処理
+    // ===============================
+
+    private fun scanMarkers(world: World, min: BlockVector3, max: BlockVector3): List<FloorMarker> {
+        val list = mutableListOf<FloorMarker>()
+
+        for (x in min.blockX..max.blockX)
+            for (y in min.blockY..max.blockY)
+                for (z in min.blockZ..max.blockZ) {
+
+                    val block = world.getBlockAt(x, y, z)
+
+                    when (block.type) {
+                        Material.STONE_BRICK_STAIRS ->
+                            list.add(FloorMarker(MarkerType.SPAWN, block.location))
+
+                        Material.DIAMOND_BLOCK ->
+                            list.add(FloorMarker(MarkerType.GOAL, block.location))
+
+                        Material.CRYING_OBSIDIAN ->
+                            list.add(FloorMarker(MarkerType.NEXT, block.location))
+
+                        else -> {}
+                    }
+                }
+
+        return list
+    }
+
+    fun getInstance(id: UUID): FloorInstance? {
+        return activeInstances[id]
+    }
+
+    fun getMarkers(instance: FloorInstance): List<FloorMarker> {
+        return instance.markers
+    }
+
 }

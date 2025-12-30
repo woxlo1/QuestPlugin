@@ -44,10 +44,10 @@ object QuestConfigManager {
             val floorId = q.getString("floorId")
 
             // 追加: テレポート先の読み込み（null許容）
-            val teleportWorld = q.getString("teleportWorld")
-            val teleportX = if (q.contains("teleportX")) q.getDouble("teleportX") else null
-            val teleportY = if (q.contains("teleportY")) q.getDouble("teleportY") else null
-            val teleportZ = if (q.contains("teleportZ")) q.getDouble("teleportZ") else null
+            // val teleportWorld = q.getString("teleportWorld")
+            // val teleportX = if (q.contains("teleportX")) q.getDouble("teleportX") else null
+            // val teleportY = if (q.contains("teleportY")) q.getDouble("teleportY") else null
+            // val teleportZ = if (q.contains("teleportZ")) q.getDouble("teleportZ") else null
 
             quests[id] = QuestData(
                 id = id,
@@ -67,10 +67,10 @@ object QuestConfigManager {
 
                 floorId = floorId,
 
-                teleportWorld = teleportWorld,
-                teleportX = teleportX,
-                teleportY = teleportY,
-                teleportZ = teleportZ,
+                // teleportWorld = teleportWorld,
+                // teleportX = teleportX,
+                // teleportY = teleportY,
+                // teleportZ = teleportZ,
                 maxLives = if (maxLives >= 0) maxLives else null
             )
         }
@@ -101,10 +101,10 @@ object QuestConfigManager {
 
             root.set("$path.floorId", data.floorId)
             // 追加: テレポート先の保存
-            root.set("$path.teleportWorld", data.teleportWorld)
-            root.set("$path.teleportX", data.teleportX)
-            root.set("$path.teleportY", data.teleportY)
-            root.set("$path.teleportZ", data.teleportZ)
+            // root.set("$path.teleportWorld", data.teleportWorld)
+            // root.set("$path.teleportX", data.teleportX)
+            // root.set("$path.teleportY", data.teleportY)
+            // root.set("$path.teleportZ", data.teleportZ)
         }
 
         root.save(questFile)

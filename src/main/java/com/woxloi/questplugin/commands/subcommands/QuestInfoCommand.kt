@@ -98,10 +98,10 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
         }
 
 
-        if (quest.teleportWorld != null) {
-            sender.sendMessage("§e§lテレポート先: §f§l${quest.teleportWorld} (${quest.teleportX}, ${quest.teleportY}, ${quest.teleportZ})")
-            sender.sendMessage( text("&c&l[ここをクリックでテレポート先に自動でテレポートする]") .clickEvent(runCommand("/execute in ${quest.teleportWorld} run tp ${sender.name} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ}")) )
-        }
+        //if (quest.teleportWorld != null) {
+        //    sender.sendMessage("§e§lテレポート先: §f§l${quest.teleportWorld} (${quest.teleportX}, ${quest.teleportY}, ${quest.teleportZ})")
+        //    sender.sendMessage( text("&c&l[ここをクリックでテレポート先に自動でテレポートする]") .clickEvent(runCommand("/execute in ${quest.teleportWorld} run tp ${sender.name} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ}")) )
+        //}
 
 
         sender.sendMessage("§7§l==============================")

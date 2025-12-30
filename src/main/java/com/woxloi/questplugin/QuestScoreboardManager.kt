@@ -49,7 +49,7 @@ class QuestScoreboard(private val player: Player, private val quest: QuestData) 
             }
             val remainingLives = (totalMaxLives - totalDeaths).coerceAtLeast(0)
 
-            scoreboard.setText(index++, "§d§lライフ残り: §f$remainingLives")
+            scoreboard.setText(index++, "§d§l総ライフ数: §f$remainingLives")
         }
 
         // パーティーメンバーの表示

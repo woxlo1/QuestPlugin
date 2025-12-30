@@ -19,11 +19,11 @@ data class QuestData(
 
     var floorId: String? = null,
 
-    //floorId の登場により使わなくなるかも
-    var teleportWorld: String? = null,
-    var teleportX: Double? = null,
-    var teleportY: Double? = null,
-    var teleportZ: Double? = null,
+    // floorId の登場により使わなくなるかも
+    // var teleportWorld: String? = null,
+    // var teleportX: Double? = null,
+    // var teleportY: Double? = null,
+    // var teleportZ: Double? = null,
 
     var startCommands: MutableList<String> = mutableListOf(),
     var maxLives: Int? = null

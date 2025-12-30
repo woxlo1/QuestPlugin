@@ -475,16 +475,16 @@ object ActiveQuestManager {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", member.name))
             }
 
-            if (quest.teleportWorld != null &&
-                quest.teleportX != null && quest.teleportY != null && quest.teleportZ != null
-            ) {
-                Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
-                    val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
-                    member.teleport(loc)
-                    member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました。")
-                    plugin.logger.info("[QuestTeleport] Player ${member.name} quest ${quest.name} ${quest.teleportWorld} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ} へテレポート完了")
-                }
-            }
+            // if (quest.teleportWorld != null &&
+            //     quest.teleportX != null && quest.teleportY != null && quest.teleportZ != null
+            // ) {
+            //    Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
+            //        val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
+            //        member.teleport(loc)
+            //        member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました。")
+            //        plugin.logger.info("[QuestTeleport] Player ${member.name} quest ${quest.name} ${quest.teleportWorld} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ} へテレポート完了")
+            //    }
+            // }
 
             com.woxloi.questplugin.ActiveQuestManager.updateBossBar(member)
         }
@@ -541,7 +541,7 @@ object ActiveQuestManager {
         if (PartyManager.disbandParty(player)) {
             player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエストが終了とともにパーティーが解散されました")
         } else {
-            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lパーティー解散に失敗しました。")
+            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lパーティー解散に失敗しました")
         }
     }
 
@@ -582,7 +582,7 @@ object ActiveQuestManager {
                 })
 
                 com.woxloi.questplugin.ActiveQuestManager.addQuestHistory(member.uniqueId, memberData, true)
-                member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト[${memberData.quest.name}]をクリアしました！")
+                member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト${memberData.quest.name}をクリアしました！")
 
                 for (cmd in memberData.quest.rewards) {
                     val command = cmd.replace("%player%", member.name)

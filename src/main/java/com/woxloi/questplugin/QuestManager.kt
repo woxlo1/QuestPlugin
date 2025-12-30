@@ -9,6 +9,4 @@ object QuestManager {
 
     fun getQuestById(id: String): QuestData? = quests[id]
 
-    fun getAllQuests(): Collection<QuestData> = quests.values
-
 }
