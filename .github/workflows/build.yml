@@ -1,0 +1,39 @@
+name: Build QuestPlugin
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリ取得
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Java セットアップ
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Gradle 実行権限
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      # ビルド
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # jar を成果物として保存
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuestPlugin
+          path: build/libs/*.jar
