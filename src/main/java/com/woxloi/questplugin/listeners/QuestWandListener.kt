@@ -20,7 +20,7 @@ object QuestWandData {
     val endPoint = mutableMapOf<UUID, Vector>()
 }
 
-class QuestWandListener : Listener {
+object QuestWandListener : Listener {
 
     @EventHandler
     fun onUseWand(e: PlayerInteractEvent) {

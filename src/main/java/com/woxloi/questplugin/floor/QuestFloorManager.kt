@@ -122,8 +122,17 @@ object QuestFloorManager {
     // Schematic
     // ===============================
     private fun pasteFloor(file: File, origin: Location) {
-        val format = ClipboardFormats.findByFile(file)!!
-        val clipboard = format.getReader(file.inputStream()).read()
+
+        if (!file.exists()) {
+            throw IllegalStateException("Schematic not found: ${file.path}")
+        }
+
+        val format = ClipboardFormats.findByFile(file)
+            ?: throw IllegalStateException("Unknown schematic format: ${file.name}")
+
+        val clipboard = format.getReader(file.inputStream()).use {
+            it.read()
+        }
 
         val session = WorldEdit.getInstance()
             .newEditSession(BukkitAdapter.adapt(origin.world))
