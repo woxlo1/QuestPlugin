@@ -31,6 +31,7 @@ class QuestPlugin : JavaPlugin() {
         server.pluginManager.registerEvents(QuestRespawnListener(), this)
         server.pluginManager.registerEvents(QuestProgressListener(), this)
         server.pluginManager.registerEvents(QuestWandListener(), this)
+        server.pluginManager.registerEvents(QuestGoalListener(), this)
         server.pluginManager.registerEvents(SmeltTracker, this)
         server.pluginManager.registerEvents(QuestDeathListener(this), this)
 

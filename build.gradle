@@ -11,27 +11,30 @@ repositories {
     mavenCentral()
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
     maven { url = 'https://jitpack.io' }
+    maven { url = 'https://mvn.lumine.io/repository/maven-public/' } // Mythic API
 }
 
 dependencies {
-    compileOnly fileTree(dir: 'libs', include: '*.jar')
-
-    compileOnly("io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT")
+    // Paper API
+    compileOnly "io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT"
 
     // Kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    // MythicMobs（これが正解）
-    compileOnly("io.lumine:MythicBukkit:5.7.1")
+    // MythicBukkit API（正しい依存）
+    compileOnly "io.lumine:Mythic-Dist:5.7.1"
 
     // Vault
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
 
     // Adventure
-    implementation("net.kyori:adventure-platform-bukkit:4.3.1")
+    implementation "net.kyori:adventure-platform-bukkit:4.3.1"
 
     // Coroutine
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
+
+    // libs フォルダの jar（任意）
+    compileOnly fileTree(dir: 'libs', include: '*.jar')
 }
 
 def targetJavaVersion = 17
