@@ -1,0 +1,9 @@
+questWorld: "quest_world"
+
+quests:
+  test:
+    name: "テストクエスト"
+    type: KILL
+    target: ZOMBIE
+    amount: 10
+    floorId: floor1
