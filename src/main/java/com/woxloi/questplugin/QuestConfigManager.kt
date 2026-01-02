@@ -10,6 +10,9 @@ object QuestConfigManager {
 
     val quests = mutableMapOf<String, QuestData>()
 
+    var questWorld: String = "world"
+        private set
+
     fun loadAllQuests() {
         if (!questFile.exists()) {
             questFile.parentFile.mkdirs()
@@ -17,6 +20,9 @@ object QuestConfigManager {
         }
 
         config = YamlConfiguration.loadConfiguration(questFile)
+
+        questWorld = config.getString("questWorld") ?: "world"
+
         quests.clear()
 
         val section = config.getConfigurationSection("quests") ?: return
@@ -78,6 +84,8 @@ object QuestConfigManager {
 
     fun saveAllQuests() {
         val root = YamlConfiguration()
+
+        root.set("questWorld", questWorld)
 
         for ((id, data) in quests) {
             val path = "quests.$id"

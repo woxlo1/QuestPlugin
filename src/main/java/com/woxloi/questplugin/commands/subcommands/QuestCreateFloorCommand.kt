@@ -2,8 +2,12 @@ package com.woxloi.questplugin.commands.subcommands
 
 import com.sk89q.worldedit.WorldEdit
 import com.sk89q.worldedit.bukkit.BukkitAdapter
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy
+import com.sk89q.worldedit.function.operation.Operations
 import com.sk89q.worldedit.math.BlockVector3
+import com.sk89q.worldedit.regions.CuboidRegion
 import com.woxloi.questplugin.QuestPlugin
 import com.woxloi.questplugin.floor.QuestFloorConfig
 import com.woxloi.questplugin.listeners.QuestWandListener
@@ -24,38 +28,48 @@ class QuestCreateFloorCommand : CommandExecutor {
     ): Boolean {
 
         if (sender !is Player) {
-            sender.sendMessage("§c§lプレイヤーのみ実行可能です")
-            return true
-        }
-
-        if (args.size < 3) {
-            sender.sendMessage("§c/quest floor create <id>")
+            sender.sendMessage(QuestPlugin.prefix + "§cプレイヤーのみ実行可能です")
             return true
         }
 
         val floorId = args[2]
 
-        // Wand選択取得
-        val selection = QuestWandListener.getSelectionLocations(sender)
+        // ============================
+        // QuestWand 選択取得
+        // ============================
+        val (minLoc, maxLoc) = QuestWandListener.getSelectionLocations(sender)
             ?: run {
-                sender.sendMessage("§c§lQuestWandで範囲を選択してください")
+                sender.sendMessage(QuestPlugin.prefix + "§cQuestWandで範囲を選択してください")
                 return true
             }
 
-        val (minLoc, maxLoc) = selection
+        val world = sender.world
 
-        // ===== WorldEdit clipboard =====
-        val session = WorldEdit.getInstance()
-            .sessionManager
-            .get(BukkitAdapter.adapt(sender))
+        val min = BlockVector3.at(minLoc.blockX, minLoc.blockY, minLoc.blockZ)
+        val max = BlockVector3.at(maxLoc.blockX, maxLoc.blockY, maxLoc.blockZ)
 
-        val holder = session.clipboard ?: run {
-            sender.sendMessage("§c§lWorldEditで範囲を選択してください")
-            return true
-        }
+        // ============================
+        // Clipboard 作成
+        // ============================
+        val region = CuboidRegion(min, max)
+        val clipboard = BlockArrayClipboard(region)
 
-        val clipboard = holder.clipboard
+        val editSession = WorldEdit.getInstance()
+            .newEditSession(BukkitAdapter.adapt(world))
 
+        val copy = ForwardExtentCopy(
+            editSession,
+            region,
+            clipboard,
+            region.minimumPoint
+        )
+
+        Operations.complete(copy)
+        editSession.close()
+
+        // ============================
+        // Schematic 保存
+        // ============================
         val schemDir = File(QuestPlugin.plugin.dataFolder, "schematics")
         if (!schemDir.exists()) schemDir.mkdirs()
 
@@ -63,28 +77,19 @@ class QuestCreateFloorCommand : CommandExecutor {
 
         BuiltInClipboardFormat.SPONGE_SCHEMATIC
             .getWriter(FileOutputStream(schemFile))
-            .use { writer ->
-                writer.write(clipboard)
-            }
+            .use { it.write(clipboard) }
 
-        // ===== floors.yml 保存 =====
+        // ============================
+        // floors.yml 保存
+        // ============================
         QuestFloorConfig.saveFloor(
             id = floorId,
-            world = sender.world,
-            min = BlockVector3.at(
-                minLoc.blockX,
-                minLoc.blockY,
-                minLoc.blockZ
-            ),
-            max = BlockVector3.at(
-                maxLoc.blockX,
-                maxLoc.blockY,
-                maxLoc.blockZ
-            )
+            world = world,
+            min = min,
+            max = max
         )
 
-        sender.sendMessage("§a§lフロア §e$floorId§a§lを保存しました")
-
+        sender.sendMessage(QuestPlugin.prefix + "§a§lフロア§e§l" + floorId + "§a§lを保存しました")
         return true
     }
 }

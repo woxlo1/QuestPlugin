@@ -10,6 +10,7 @@ import com.sk89q.worldguard.WorldGuard
 import com.sk89q.worldguard.protection.flags.Flags
 import com.sk89q.worldguard.protection.flags.StateFlag
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion
+import com.woxloi.questplugin.QuestConfigManager
 import com.woxloi.questplugin.QuestData
 import org.bukkit.*
 import org.bukkit.block.Sign
@@ -63,8 +64,9 @@ object QuestFloorManager {
 
         val floorId = quest.floorId ?: error("Quest floorId is null")
         val floor = QuestFloorConfig.getFloor(floorId)
-        val world = Bukkit.getWorld(floor.world)
-            ?: error("World ${floor.world} not found")
+
+        val world = Bukkit.getWorld(QuestConfigManager.questWorld)
+            ?: error("Quest world not found")
 
         val instanceId = UUID.randomUUID()
         val origin = getNextOrigin(world)
@@ -75,7 +77,7 @@ object QuestFloorManager {
         val max = floor.max.add(origin.blockX, origin.blockY, origin.blockZ)
 
         val spawners = scanSpawnerSigns(world, min, max)
-        val markers = scanMarkers(world, min, max) // ← ★追加
+        val markers = scanMarkers(world, min, max)
 
         val instance = FloorInstance(
             instanceId,
@@ -94,7 +96,6 @@ object QuestFloorManager {
 
         createWorldGuardRegion(instanceId, world, min, max, members)
 
-        // ===== スポーン処理 =====
         val spawn = markers.firstOrNull { it.type == MarkerType.SPAWN }
             ?: error("Spawn marker not found")
 
