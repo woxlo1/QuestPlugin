@@ -9,7 +9,6 @@ import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
-import com.woxloi.questplugin.floor.QuestFloorConfig
 import com.woxloi.questplugin.party.PartyManager
 import net.kyori.adventure.text.event.ClickEvent.runCommand
 
@@ -76,15 +75,6 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
         }
         sender.sendMessage(text("§c§l[ここをクリックでクエスト開始コマンドを自動入力する]").clickEvent(suggestCommand("/quest start $questId")));
 
-        quest.floorId?.let { floorId ->
-            val floor = QuestFloorConfig.getFloor(floorId)
-            val sizeX = floor.max.blockX - floor.min.blockX + 1
-            val sizeY = floor.max.blockY - floor.min.blockY + 1
-            val sizeZ = floor.max.blockZ - floor.min.blockZ + 1
-
-            sender.sendMessage("  §7§lサイズ: §f${sizeX}x${sizeY}x${sizeZ}")
-        }
-
         if (quest.partyEnabled) {
             sender.sendMessage("§e§lパーティー対応: §a§l有効")
             sender.sendMessage("  §7§l進捗共有: ${if (quest.shareProgress) "§a§lはい" else "§c§lいいえ"}")
@@ -98,10 +88,10 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
         }
 
 
-        //if (quest.teleportWorld != null) {
-        //    sender.sendMessage("§e§lテレポート先: §f§l${quest.teleportWorld} (${quest.teleportX}, ${quest.teleportY}, ${quest.teleportZ})")
-        //    sender.sendMessage( text("&c&l[ここをクリックでテレポート先に自動でテレポートする]") .clickEvent(runCommand("/execute in ${quest.teleportWorld} run tp ${sender.name} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ}")) )
-        //}
+        if (quest.teleportWorld != null) {
+            sender.sendMessage("§e§lテレポート先: §f§l${quest.teleportWorld} (${quest.teleportX}, ${quest.teleportY}, ${quest.teleportZ})")
+            sender.sendMessage( text("&c&l[ここをクリックでテレポート先に自動でテレポートする]") .clickEvent(runCommand("/execute in ${quest.teleportWorld} run tp ${sender.name} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ}")) )
+        }
 
 
         sender.sendMessage("§7§l==============================")

@@ -9,7 +9,6 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestPlugin
-import com.woxloi.questplugin.floor.QuestFloorManager
 import com.woxloi.questplugin.party.PartyManager
 
 class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
@@ -57,14 +56,6 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             }
 
             if (allDead) {
-                val instance = QuestFloorManager.getInstanceByPlayer(player)
-
-                val instanceId = QuestFloorManager.getInstanceByPlayer(player)
-
-                if (instanceId != null) {
-                    QuestFloorManager.release(instanceId)
-                }
-
                 partyMembers.forEach {
                     ActiveQuestManager.cancelQuest(it)
                     it.sendMessage(QuestPlugin.prefix + "§c§l全滅した...")
@@ -74,14 +65,6 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
         } else {
             // ソロプレイヤーが死亡しきった場合
             if ((quest.maxLives ?: 0) <= data.deathCount) {
-                val instance = QuestFloorManager.getInstanceByPlayer(player)
-
-                val instanceId = QuestFloorManager.getInstanceByPlayer(player)
-
-                if (instanceId != null) {
-                    QuestFloorManager.release(instanceId)
-                }
-
                 ActiveQuestManager.cancelQuest(player)
                 player.sendMessage(QuestPlugin.prefix + "§c§lあなたは死んだ")
             }

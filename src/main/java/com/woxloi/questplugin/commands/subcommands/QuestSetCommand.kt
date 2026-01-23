@@ -6,7 +6,6 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.*
-import com.woxloi.questplugin.floor.QuestFloorConfig
 
 class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
@@ -49,33 +48,10 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
                 "partymaxmembers"-> quest.partyMaxMembers =
                     value.toInt().positive() ?: return sender.fail("partyMaxMembersは正の整数")
 
-                "floorid" -> {
-
-                    if (value.isBlank()) {
-                        return sender.fail("floorid を指定してください（解除する場合は 'none'）")
-                    }
-
-                    // 解除
-                    if (value.equals("none", ignoreCase = true)) {
-                        quest.floorId = null
-                        sender.sendMessage(
-                            QuestPlugin.prefix + "§a§lフロア設定を解除しました"
-                        )
-                        return true
-                    }
-
-                    // 存在チェック
-                    if (!QuestFloorConfig.exists(value)) {
-                        return sender.fail("そのようなフロア名は存在しません")
-                    }
-
-                    quest.floorId = value
-                }
-
-                //"teleportworld" -> quest.teleportWorld = value
-                //"teleportx"     -> quest.teleportX     = value.toDoubleOrNull() ?: return sender.fail("X座標が数値ではありません")
-                //"teleporty"     -> quest.teleportY     = value.toDoubleOrNull() ?: return sender.fail("Y座標が数値ではありません")
-                //"teleportz"     -> quest.teleportZ     = value.toDoubleOrNull() ?: return sender.fail("Z座標が数値ではありません")
+                "teleportworld" -> quest.teleportWorld = value
+                "teleportx"     -> quest.teleportX     = value.toDoubleOrNull() ?: return sender.fail("X座標が数値ではありません")
+                "teleporty"     -> quest.teleportY     = value.toDoubleOrNull() ?: return sender.fail("Y座標が数値ではありません")
+                "teleportz"     -> quest.teleportZ     = value.toDoubleOrNull() ?: return sender.fail("Z座標が数値ではありません")
 
                 else -> return sender.fail("設定できないキーです。")
             }
@@ -83,7 +59,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
             return sender.fail("数値のパースに失敗しました")
         }
 
-        sender.sendMessage(QuestPlugin.prefix + "§b§lクエスト名 " + id + "§f§l" + key + "を§a§l" + value + "§f§lに設定しました")
+        sender.sendMessage(QuestPlugin.prefix + "§b§lクエスト名" + id + "の§f§l" + key + "を§a§l" + value + "§f§lに設定しました")
         return true
     }
 

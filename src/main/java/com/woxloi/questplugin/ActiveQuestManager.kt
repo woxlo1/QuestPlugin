@@ -12,10 +12,7 @@ import org.bukkit.boss.BarStyle
 import org.bukkit.boss.BossBar
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.plugin.Plugin
 import com.woxloi.questplugin.QuestPlugin.Companion.plugin
-import com.woxloi.questplugin.QuestPlugin.Companion.prefix
-import com.woxloi.questplugin.floor.QuestFloorManager
 import com.woxloi.questplugin.party.PartyManager
 import com.woxloi.questplugin.utils.ItemBackup
 import java.io.File
@@ -35,8 +32,7 @@ object ActiveQuestManager {
         val questScoreboard: QuestScoreboard,
         var deathCount: Int = 0,
         var originalLocation: Location,
-        var inventoryBackup: ItemBackup.InventoryBackup?,
-        var floorInstanceId: UUID?
+        var inventoryBackup: ItemBackup.InventoryBackup?
     )
 
     data class QuestHistoryEntry(
@@ -435,13 +431,6 @@ object ActiveQuestManager {
 
         timer.start()
 
-        QuestFloorManager.createInstance(
-            quest = quest,
-            members = partyMembers
-        )
-
-        val instanceId = QuestFloorManager.getInstanceByPlayer(player)
-
         for (member in partyMembers) {
             // スコアボード表示
             val board = com.woxloi.questplugin.QuestScoreboard(member, quest).apply { show() }
@@ -465,8 +454,6 @@ object ActiveQuestManager {
                     originalLocation = member.location.clone(),
                     // もうメモリ上の InventoryBackup は不要なので null にする
                     inventoryBackup = null,
-                    floorInstanceId = instanceId
-
                 )
 
             bossBar.addPlayer(member)
@@ -475,16 +462,16 @@ object ActiveQuestManager {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", member.name))
             }
 
-            // if (quest.teleportWorld != null &&
-            //     quest.teleportX != null && quest.teleportY != null && quest.teleportZ != null
-            // ) {
-            //    Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
-            //        val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
-            //        member.teleport(loc)
-            //        member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました。")
-            //        plugin.logger.info("[QuestTeleport] Player ${member.name} quest ${quest.name} ${quest.teleportWorld} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ} へテレポート完了")
-            //    }
-            // }
+            if (quest.teleportWorld != null &&
+                quest.teleportX != null && quest.teleportY != null && quest.teleportZ != null
+            ) {
+               Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
+                   val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
+                   member.teleport(loc)
+                   member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました。")
+                   plugin.logger.info("[QuestTeleport] Player ${member.name} quest ${quest.name} ${quest.teleportWorld} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ} へテレポート完了")
+               }
+            }
 
             com.woxloi.questplugin.ActiveQuestManager.updateBossBar(member)
         }
@@ -497,15 +484,10 @@ object ActiveQuestManager {
         val data = com.woxloi.questplugin.ActiveQuestManager.activeQuests[uuid] ?: return
 
         val partyMembers = if (data.quest.partyEnabled) {
+
             PartyManager.getPartyMembers(player).distinctBy { it.uniqueId }
         } else {
             listOf(player)
-        }
-
-        val leader = partyMembers.firstOrNull()
-
-        if (leader != null && leader.uniqueId == player.uniqueId) {
-            data.floorInstanceId?.let { QuestFloorManager.release(it) }
         }
 
         for (member in partyMembers) {
@@ -521,7 +503,7 @@ object ActiveQuestManager {
             val memberData = com.woxloi.questplugin.ActiveQuestManager.activeQuests.remove(member.uniqueId)
             if (memberData != null) {
                 memberData.bossBar.removePlayer(member)
-                if (leader?.uniqueId == member.uniqueId) {
+                if (member.uniqueId == member.uniqueId) {
                     memberData.timer.stop()
                 }
                 memberData.questScoreboard.hide()

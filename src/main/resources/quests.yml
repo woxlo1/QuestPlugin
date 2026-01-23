@@ -1,4 +1,3 @@
-questWorld: "quest_world"
 
 quests:
   test:
@@ -6,4 +5,3 @@ quests:
     type: KILL
     target: ZOMBIE
     amount: 10
-    floorId: floor1
