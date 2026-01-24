@@ -110,7 +110,6 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
             }
         }
 
-
         return true
     }
 }

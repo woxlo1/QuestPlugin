@@ -317,7 +317,7 @@ object ActiveQuestManager {
 
             quest.partyMaxMembers?.let { limit ->
                 if (members.size > limit) {
-                    player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストのパーティー上限は $limit 人です（現在 ${members.size} 人）。")
+                    player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストのパーティー上限は${limit}人です（現在${members.size}人）")
                     return false
                 }
             }

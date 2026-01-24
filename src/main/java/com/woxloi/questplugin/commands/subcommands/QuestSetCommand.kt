@@ -17,7 +17,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
         val quest = QuestConfigManager.getQuest(id)
         if (quest == null) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト[$id]は存在しません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${id}は存在しません。")
             return true
         }
 

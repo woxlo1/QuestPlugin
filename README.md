@@ -44,7 +44,6 @@ Minecraftサーバー用のクエスト管理プラグインです。
 | `/quest config set <ID> shareprogress <true/false>`   | 進行状況の共有を有効/無効にする | `quest.config.shareprogress`   |
 | `/quest config set <ID> sharecompletion <true/false>` | 達成状態の共有を有効/無効にする | `quest.config.sharecompletion` |
 | `/quest config set <ID> partymaxmembers <数値>`         | パーティー最大人数を設定する   | `quest.config.partymaxmembers` |
-| `/quest config set <ID> floorid <フロア名>`               | 転送させるフロアを設定する    | `quest.config.floorid`         |
 | `/quest config set <ID> teleportworld <ワールド名>`        | テレポート先のワールドを設定する | `quest.config.teleportworld`   |
 | `/quest config set <ID> teleportx <X座標>`              | テレポート先のX座標を設定する  | `quest.config.teleportx`       |
 | `/quest config set <ID> teleporty <Y座標>`              | テレポート先のY座標を設定する  | `quest.config.teleporty`       |
@@ -112,7 +111,6 @@ Minecraftサーバー用のクエスト管理プラグインです。
 | `partyMaxMembers` | クエストに挑める最大パーティー人数        | `3`                               |
 | `shareProgress`   | パーティー内で進行状況を共有するか        | `true`                            |
 | `shareCompletion` | パーティー内でクリア状態を共有するか       | `true`                            |
-| `floorId`         | どのフロアにプレイヤーを転送させるか       | `test`                            |
 | `teleportWorld`   | プレイヤーを指定したワールドに飛ばす       | `world`                           |
 | `teleportX`       | 指定したX座標に飛ばす              | `0`                               |
 | `teleportY`       | 指定したY座標に飛ばす              | `64`                              |

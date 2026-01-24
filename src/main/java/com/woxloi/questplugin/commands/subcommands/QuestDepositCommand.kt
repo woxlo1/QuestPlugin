@@ -31,9 +31,9 @@ class QuestDepositCommand : CommandExecutor {
         }
 
         val vault = com.woxloi.questplugin.utils.VaultAPI()
-        val ok = vault.deposit(target.uniqueId, amount)
+        val success = vault.deposit(target.uniqueId, amount)
 
-        if (ok) {
+        if (success) {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}に${amount}円を付与しました。")
         } else {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l付与に失敗しました。")

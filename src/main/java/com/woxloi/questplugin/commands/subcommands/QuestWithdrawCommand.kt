@@ -32,9 +32,9 @@ class QuestWithdrawCommand : CommandExecutor {
         }
 
         val vault = com.woxloi.questplugin.utils.VaultAPI()
-        val ok = vault.withdraw(target.uniqueId, amount)
+        val success = vault.withdraw(target.uniqueId, amount)
 
-        if (ok) {
+        if (success) {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}から${amount}円を引き出しました。")
         } else {
             sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l引き出しに失敗しました")

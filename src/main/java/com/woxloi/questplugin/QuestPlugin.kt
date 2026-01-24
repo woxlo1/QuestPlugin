@@ -15,12 +15,10 @@ class QuestPlugin : JavaPlugin() {
 
         lateinit var plugin: QuestPlugin
         lateinit var commandRouter: QuestCommand
-        lateinit var questWandKey: NamespacedKey
     }
 
     override fun onEnable() {
         plugin = this
-        questWandKey = NamespacedKey(this, "quest_wand")
 
         saveDefaultConfig()
 
