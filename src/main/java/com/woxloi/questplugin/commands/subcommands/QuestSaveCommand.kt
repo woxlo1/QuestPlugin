@@ -11,7 +11,7 @@ import com.woxloi.questplugin.QuestPlugin
 class QuestSaveConfigCommand(private val plugin: JavaPlugin) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         QuestConfigManager.saveAllQuests()
-        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト設定を保存しました。")
+        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト設定を保存しました ")
         return true
     }
 }

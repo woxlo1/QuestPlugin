@@ -16,7 +16,7 @@ class QuestListCommand(private val plugin: JavaPlugin) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         val quests = QuestConfigManager.getAllQuests()
         if (quests.isEmpty()) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§l登録されたクエストはありません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§l登録されたクエストはありません ")
             return true
         }
         sender.sendMessage("§a§l====== クエスト一覧 ======")

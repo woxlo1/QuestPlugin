@@ -225,7 +225,7 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("クエスト完了時のテレポート先Z座標を設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
-        
+
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("config"))

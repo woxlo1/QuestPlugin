@@ -19,34 +19,34 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val targetName = args[1]
         val targetPlayer = Bukkit.getOfflinePlayer(targetName)
         if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline)) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー" + targetName + "は存在しません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー" + targetName + "は存在しません ")
             return true
         }
 
         val page = if (args.size >= 3) args[2].toIntOrNull() ?: 1 else 1
         if (page <= 0) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lページ番号は1以上を指定してください。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lページ番号は1以上を指定してください ")
             return true
         }
 
         val uuid = targetPlayer.uniqueId
         val historyFile = File(plugin.dataFolder, "quest_histories.yml")
         if (!historyFile.exists()) {
-            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません。")
+            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません ")
             return true
         }
 
         val historyConfig = YamlConfiguration.loadConfiguration(historyFile)
         val historiesSection = historyConfig.getConfigurationSection("histories")
         if (historiesSection == null) {
-            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません。")
+            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません ")
             return true
         }
 
         val uuidStr = uuid.toString()
         val questLogsRaw = historiesSection.getMapList(uuidStr)
         if (questLogsRaw.isNullOrEmpty()) {
-            sender.sendMessage(QuestPlugin.prefix + "§e§l" + targetName + "のクエスト履歴はありません。")
+            sender.sendMessage(QuestPlugin.prefix + "§e§l" + targetName + "のクエスト履歴はありません ")
             return true
         }
 
@@ -68,7 +68,7 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val pageSize = 10
         val maxPage = (logs.size + pageSize - 1) / pageSize
         if (page > maxPage) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lそのようなページ番号は存在しません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lそのようなページ番号は存在しません ")
             return true
         }
 
@@ -103,10 +103,10 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
             sender.sendMessage(navigation)
         } else {
             if (page > 1) {
-                sender.sendMessage("§7§l前のページを見るには /quest logop $targetName ${page - 1} を入力してください。")
+                sender.sendMessage("§7§l前のページを見るには /quest logop $targetName ${page - 1} を入力してください ")
             }
             if (page < maxPage) {
-                sender.sendMessage("§7§l次のページを見るには /quest logop $targetName ${page + 1} を入力してください。")
+                sender.sendMessage("§7§l次のページを見るには /quest logop $targetName ${page + 1} を入力してください ")
             }
         }
 

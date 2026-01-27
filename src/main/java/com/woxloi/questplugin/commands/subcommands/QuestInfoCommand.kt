@@ -20,7 +20,7 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
         val quest = QuestConfigManager.getQuest(questId)
 
         if (quest == null) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${questId}が見つかりません。")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${questId}が見つかりません ")
             return true
         }
 
