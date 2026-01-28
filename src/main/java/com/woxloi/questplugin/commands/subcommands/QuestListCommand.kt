@@ -22,8 +22,8 @@ class QuestListCommand(private val plugin: JavaPlugin) : CommandExecutor {
         sender.sendMessage("§a§l====== クエスト一覧 ======")
         for (quest in quests) {
             sender.sendMessage(Component.text("§e§l${quest.id} : ${quest.name}").clickEvent(suggestCommand("/quest info ${quest.id}")));
-            sender.sendMessage(Component.text("§f§lクエストクリックで情報表示"))
         }
+        sender.sendMessage(Component.text("§f§lクエストクリックで情報表示"))
         sender.sendMessage("§a§l====================")
         return true
     }

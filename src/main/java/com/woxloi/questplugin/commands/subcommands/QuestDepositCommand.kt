@@ -20,13 +20,13 @@ class QuestDepositCommand : CommandExecutor {
         val amount = args[2].toDoubleOrNull()
 
         if (amount == null || amount <= 0) {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l無効な金額です ")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l無効な金額です")
             return true
         }
 
         val target = Bukkit.getOfflinePlayer(targetName)
         if (!target.hasPlayedBefore() && !target.isOnline) {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§lプレイヤーが見つかりません ")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§lプレイヤーが見つかりません")
             return true
         }
 
@@ -34,9 +34,9 @@ class QuestDepositCommand : CommandExecutor {
         val success = vault.deposit(target.uniqueId, amount)
 
         if (success) {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}に${amount}円を付与しました ")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§a§l${target.name}に${amount}円を付与しました")
         } else {
-            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l付与に失敗しました ")
+            sender.sendMessage(QuestPlugin.MoneyPrefix + "§c§l付与に失敗しました")
         }
         return true
     }

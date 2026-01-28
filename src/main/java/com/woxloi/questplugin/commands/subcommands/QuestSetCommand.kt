@@ -17,7 +17,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
         val quest = QuestConfigManager.getQuest(id)
         if (quest == null) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${id}は存在しません ")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lクエスト${id}は存在しません")
             return true
         }
 
@@ -28,7 +28,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
             when (key) {
                 "name"                -> quest.name  = value
                 "type"                -> quest.type  = QuestType.fromString(value)
-                    ?: return sender.fail("不正なtypeです ")
+                    ?: return sender.fail("不正なtypeです")
                 "target"              -> quest.target = value
                 "amount"              -> quest.amount = value.toInt().positive() ?: return sender.fail("amountは正の整数")
 
@@ -53,7 +53,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
                 "teleporty"     -> quest.teleportY     = value.toDoubleOrNull() ?: return sender.fail("Y座標が数値ではありません")
                 "teleportz"     -> quest.teleportZ     = value.toDoubleOrNull() ?: return sender.fail("Z座標が数値ではありません")
 
-                else -> return sender.fail("設定できないキーです ")
+                else -> return sender.fail("設定できないキーです")
             }
         } catch (ex: NumberFormatException) {
             return sender.fail("数値のパースに失敗しました")

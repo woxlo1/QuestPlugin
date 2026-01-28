@@ -90,7 +90,7 @@ object ActiveQuestManager {
             if (remainingLives <= 0) {
                 partyMembers.forEach {
                     com.woxloi.questplugin.ActiveQuestManager.cancelQuest(it)
-                    it.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lライフが尽きたためクエスト失敗です ")
+                    it.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lライフが尽きたためクエスト失敗です")
                 }
             } else {
                 // ライフ減少の通知など必要ならここに
@@ -262,7 +262,7 @@ object ActiveQuestManager {
 
                         val recovered = before - usage.usedCount
                         if (recovered > 0) {
-                            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§e§lクエスト「${quest.name}」の使用回数が§b§l${recovered}回§e§l回復しました！")
+                            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§e§l${quest.name}の使用回数が§b§l${recovered}回§e§l回復しました！")
                             plugin.logger.info("[QuestCooldown] Player ${player.name} quest '${quest.name}': recovered $recovered usages.")
                         }
                     } else {
@@ -294,12 +294,12 @@ object ActiveQuestManager {
                 data.quest.id == quest.id &&
                         PartyManager.isSameParty(uuid, player.uniqueId)
             }) {
-            player.sendMessage(QuestPlugin.prefix + "§c§lこのクエストは、すでにあなたのパーティーで進行中です ")
+            player.sendMessage(QuestPlugin.prefix + "§c§lこのクエストは、すでにあなたのパーティーで進行中です")
             return false
         }
 
         if (!quest.partyEnabled && activeQuests.containsKey(uuid)) {
-            player.sendMessage(QuestPlugin.prefix + "§c§lすでにクエストを進行中です ")
+            player.sendMessage(QuestPlugin.prefix + "§c§lすでにクエストを進行中です")
             return false
         }
 
@@ -307,7 +307,7 @@ object ActiveQuestManager {
 
             val members = PartyManager.getPartyMembers(player)
             if (members.isEmpty()) {
-                player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストはパーティー専用です まずパーティーを作成してください ")
+                player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストはパーティー専用です まずパーティーを作成してください")
                 player.sendMessage(
                     text("§c§l[ここをクリックでパーティーコマンドを自動入力]")
                         .clickEvent(suggestCommand("/quest party create"))
@@ -334,12 +334,12 @@ object ActiveQuestManager {
                     quest.cooldownSeconds?.let { cd ->
                         val remaining = cd - ((System.currentTimeMillis() - usage.lastUsedTime) / 1000)
                         if (remaining > 0) {
-                            member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lクールダウン中です あと §e§l$remaining 秒§c§lお待ちください ")
+                            member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lクールダウン中です あと §e§l${remaining}秒§c§lお待ちください")
                         }
                     }
                     quest.maxUseCount?.let { maxCount ->
                         if (usage.usedCount >= maxCount) {
-                            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストは最大使用回数に達しています ")
+                            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストは最大使用回数に達しています")
                             return false
                         }
                     }
@@ -357,7 +357,7 @@ object ActiveQuestManager {
                     )
                     val remaining = (max - usage.usedCount).coerceAtLeast(0)
                     val cooldownMsg = if (cd != null) "（${cd}秒ごとに1回復）" else ""
-                    member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lこのクエストはストック制です 残り使用可能回数: §e§l$remaining / $max §a§l$cooldownMsg")
+                    member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lこのクエストはストック制です 残り使用可能回数: §e§l${remaining}/${max}§a§l${cooldownMsg}")
                 }
             }
 
@@ -377,12 +377,12 @@ object ActiveQuestManager {
                 quest.cooldownSeconds?.let { cd ->
                     val remaining = cd - ((System.currentTimeMillis() - usage.lastUsedTime) / 1000)
                     if (remaining > 0) {
-                        player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lクールダウン中です あと §e§l$remaining 秒§c§lお待ちください ")
+                        player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lクールダウン中です あと§e§l${remaining}秒§c§lお待ちください")
                     }
                 }
                 quest.maxUseCount?.let { maxCount ->
                     if (usage.usedCount >= maxCount) {
-                        player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストは最大使用回数に達しています ")
+                        player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lこのクエストは最大使用回数に達しています")
                         return false
                     }
                 }
@@ -394,7 +394,7 @@ object ActiveQuestManager {
                 val remaining = (max - usage.usedCount).coerceAtLeast(0)
                 val cd = quest.cooldownSeconds
                 val cooldownMsg = if (cd != null) "（${cd}秒ごとに1回復）" else ""
-                player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lこのクエストはストック制です 残り使用可能回数: §e§l$remaining / $max §a§l$cooldownMsg")
+                player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lこのクエストはストック制です 残り使用可能回数: §e§l${remaining}/${max}§a§l${cooldownMsg}")
             }
 
             com.woxloi.questplugin.ActiveQuestManager.PlayerQuestUsageManager.recordQuestUse(uuid, quest)
@@ -412,7 +412,7 @@ object ActiveQuestManager {
                 Bukkit.getScheduler().runTask(plugin, Runnable {
                     partyMembers.forEach {
                         com.woxloi.questplugin.ActiveQuestManager.cancelQuest(it)
-                        it.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§l制限時間内にクエストを達成できませんでした ")
+                        it.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§l時間制限が来てしまった...")
                     }
                 })
             }
@@ -468,7 +468,7 @@ object ActiveQuestManager {
                Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
                    val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
                    member.teleport(loc)
-                   member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました ")
+                   member.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエスト開始地点へテレポートしました")
                    plugin.logger.info("[QuestTeleport] Player ${member.name} quest ${quest.name} ${quest.teleportWorld} ${quest.teleportX} ${quest.teleportY} ${quest.teleportZ} へテレポート完了")
                }
             }
@@ -578,7 +578,7 @@ object ActiveQuestManager {
         if (PartyManager.disbandParty(player)) {
             player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§a§lクエストが終了とともにパーティーが解散されました")
         } else {
-            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lパーティー解散に失敗しました ")
+            player.sendMessage(com.woxloi.questplugin.QuestPlugin.Companion.prefix + "§c§lパーティー解散に失敗しました")
         }
     }
 

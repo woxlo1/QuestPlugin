@@ -19,20 +19,20 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val targetName = args[1]
         val targetPlayer = Bukkit.getOfflinePlayer(targetName)
         if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline)) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー" + targetName + "は存在しません ")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー" + targetName + "は存在しません")
             return true
         }
 
         val page = if (args.size >= 3) args[2].toIntOrNull() ?: 1 else 1
         if (page <= 0) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lページ番号は1以上を指定してください ")
+            sender.sendMessage(QuestPlugin.prefix + "§c§lページ番号は1以上を指定してください")
             return true
         }
 
         val uuid = targetPlayer.uniqueId
         val historyFile = File(plugin.dataFolder, "quest_histories.yml")
         if (!historyFile.exists()) {
-            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません ")
+            sender.sendMessage(QuestPlugin.prefix + "§e§lクエスト履歴はありません")
             return true
         }
 

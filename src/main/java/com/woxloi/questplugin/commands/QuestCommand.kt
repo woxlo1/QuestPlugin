@@ -38,6 +38,16 @@ class QuestCommand : SCommandRouter() {
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("config"))
+                .addArgument(SCommandArgument().addAllowedString("remove"))
+                .addArgument(SCommandArgument().addAlias("クエスト名"))
+                .addRequiredPermission("quest.config.create")
+                .addExplanation("クエストを削除する")
+                .setExecutor(QuestRemoveCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("config"))
                 .addArgument(SCommandArgument().addAllowedString("set"))
                 .addArgument(SCommandArgument().addAlias("クエスト名"))
                 .addArgument(SCommandArgument().addAllowedString("name"))

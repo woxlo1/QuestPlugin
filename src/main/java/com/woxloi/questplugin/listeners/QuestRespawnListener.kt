@@ -26,14 +26,14 @@ class QuestRespawnListener : Listener {
                 val target = aliveMembers.random()
                 val loc = target.location.clone().add(1.0, 0.0, 1.0)
                 loc.y = loc.world.getHighestBlockYAt(loc).toDouble()
-                player.sendMessage(QuestPlugin.prefix + "§e§lパーティーメンバーの近くにリスポーンしました ")
+                player.sendMessage(QuestPlugin.prefix + "§e§lパーティーメンバーの近くにリスポーンしました")
                 loc
             } else {
-                player.sendMessage(QuestPlugin.prefix + "§e§l元いた場所にリスポーンしました ")
+                player.sendMessage(QuestPlugin.prefix + "§e§l元いた場所にリスポーンしました")
                 data.originalLocation.clone()
             }
         } else {
-            player.sendMessage(QuestPlugin.prefix + "§e§l元いた場所にリスポーンしました ")
+            player.sendMessage(QuestPlugin.prefix + "§e§l元いた場所にリスポーンしました")
             data.originalLocation.clone()
         }
 

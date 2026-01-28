@@ -8,10 +8,18 @@ import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
 
-class QuestSaveConfigCommand(private val plugin: JavaPlugin) : CommandExecutor {
+class QuestRemoveCommand(private val plugin: JavaPlugin) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        QuestConfigManager.saveAllQuests()
-        sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト設定を保存しました")
+
+        val id = args[2]
+
+        if (QuestConfigManager.exists(id)) {
+            sender.sendMessage(QuestPlugin.prefix + "§c§lそのIDのクエストは既に存在します")
+            return true
+        }
+
+        QuestConfigManager.deleteQuest(id)
+        sender.sendMessage(QuestPlugin.prefix + "§a§l" + id + "を削除しました")
         return true
     }
 }
