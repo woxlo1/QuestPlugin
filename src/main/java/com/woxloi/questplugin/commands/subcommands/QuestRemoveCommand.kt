@@ -13,8 +13,8 @@ class QuestRemoveCommand(private val plugin: JavaPlugin) : CommandExecutor {
 
         val id = args[2]
 
-        if (QuestConfigManager.exists(id)) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lそのIDのクエストは既に存在します")
+        if (!QuestConfigManager.exists(id)) {
+            sender.sendMessage(QuestPlugin.prefix + "§c§lそのIDのクエストは存在しません")
             return true
         }
 
