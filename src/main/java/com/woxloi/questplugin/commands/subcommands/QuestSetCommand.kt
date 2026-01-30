@@ -6,6 +6,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.*
+import com.woxloi.questplugin.manager.QuestConfigManager
+import com.woxloi.questplugin.model.QuestType
 
 class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
 

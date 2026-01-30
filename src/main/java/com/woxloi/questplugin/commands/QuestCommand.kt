@@ -191,13 +191,13 @@ class QuestCommand : SCommandRouter() {
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("config"))
-               .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
                 .addArgument(SCommandArgument().addAlias("クエスト名"))
                 .addArgument(SCommandArgument().addAllowedString("teleportworld"))
                 .addArgument(SCommandArgument().addAlias("テレポートワールド"))
                 .addRequiredPermission("quest.config.teleportworld")
-               .addExplanation("クエスト完了時のテレポート先ワールドを設定する")
-               .setExecutor(QuestSetCommand(plugin))
+                .addExplanation("クエスト完了時のテレポート先ワールドを設定する")
+                .setExecutor(QuestSetCommand(plugin))
         )
 
         addCommand(
@@ -377,6 +377,41 @@ class QuestCommand : SCommandRouter() {
                 .addRequiredPermission("quest.logop")
                 .addExplanation("指定したプレイヤーの履歴を見る")
                 .setExecutor(QuestLogOpCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("storage"))
+                .addArgument(SCommandArgument().addAlias("モード").addAllowedString("mysql"))
+                .addRequiredPermission("quest.storage")
+                .addExplanation("ストレージモードを確認・切り替える")
+                .setExecutor(QuestStorageCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("storage"))
+                .addArgument(SCommandArgument().addAlias("モード").addAllowedString("yaml"))
+                .addRequiredPermission("quest.storage")
+                .addExplanation("ストレージモードを確認・切り替える")
+                .setExecutor(QuestStorageCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("storage"))
+                .addArgument(SCommandArgument().addAlias("モード").addAllowedString("status"))
+                .addRequiredPermission("quest.storage")
+                .addExplanation("ストレージモードを確認・切り替える")
+                .setExecutor(QuestStorageCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("storage"))
+                .addRequiredPermission("quest.storage")
+                .addExplanation("現在のストレージモードを確認する")
+                .setExecutor(QuestStorageCommand(plugin))
         )
 
     }

@@ -6,8 +6,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
-import com.woxloi.questplugin.ActiveQuestManager
-import com.woxloi.questplugin.QuestConfigManager
+import com.woxloi.questplugin.manager.ActiveQuestManager
+import com.woxloi.questplugin.manager.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
 
 class QuestStartCommand(private val plugin: JavaPlugin) : CommandExecutor {
@@ -26,7 +26,7 @@ class QuestStartCommand(private val plugin: JavaPlugin) : CommandExecutor {
             sender.sendMessage(QuestPlugin.prefix + "§c§lクエストが見つかりませんでした")
             return true
         }
-        val success = com.woxloi.questplugin.ActiveQuestManager.startQuest(sender, quest)
+        val success = com.woxloi.questplugin.manager.ActiveQuestManager.startQuest(sender, quest)
         if (!success) {
             sender.sendMessage(QuestPlugin.prefix + "§c§lクエストをスタートできませんでした")
             return true

@@ -8,8 +8,8 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
-import com.woxloi.questplugin.QuestConfigManager
-import com.woxloi.questplugin.QuestManager
+import com.woxloi.questplugin.manager.QuestConfigManager
+import com.woxloi.questplugin.manager.QuestManager
 import com.woxloi.questplugin.QuestPlugin
 
 class QuestListCommand(private val plugin: JavaPlugin) : CommandExecutor {

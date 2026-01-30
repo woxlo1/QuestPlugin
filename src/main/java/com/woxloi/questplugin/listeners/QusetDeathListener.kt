@@ -7,8 +7,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.plugin.java.JavaPlugin
-import com.woxloi.questplugin.ActiveQuestManager
 import com.woxloi.questplugin.QuestPlugin
+import com.woxloi.questplugin.manager.ActiveQuestManager
 import com.woxloi.questplugin.party.PartyManager
 
 class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
@@ -18,7 +18,7 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
         val player = event.entity
         val uuid = player.uniqueId
 
-        val data = com.woxloi.questplugin.ActiveQuestManager.getPlayerData(uuid) ?: return
+        val data = com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(uuid) ?: return
         val quest = data.quest
 
         val maxLives = quest.maxLives ?: return
@@ -51,7 +51,7 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             val partyMembers = PartyManager.getPartyMembers(player)
 
             val allDead = partyMembers.all { member ->
-                val memberData = com.woxloi.questplugin.ActiveQuestManager.getPlayerData(member.uniqueId)
+                val memberData = com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(member.uniqueId)
                 memberData != null && (quest.maxLives ?: 0) <= memberData.deathCount
             }
 

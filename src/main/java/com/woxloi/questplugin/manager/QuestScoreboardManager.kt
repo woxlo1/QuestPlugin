@@ -1,6 +1,7 @@
-package com.woxloi.questplugin
+package com.woxloi.questplugin.manager
 
 import com.shojabon.mcutils.Utils.SScoreboard
+import com.woxloi.questplugin.model.QuestData
 import com.woxloi.questplugin.party.PartyManager
 import org.bukkit.GameMode
 import org.bukkit.entity.Player
@@ -45,7 +46,7 @@ class QuestScoreboard(private val player: Player, private val quest: QuestData) 
 
             val totalMaxLives = quest.maxLives!! * partyMembers.distinctBy { it.uniqueId }.size
             val totalDeaths = partyMembers.distinctBy { it.uniqueId }.sumOf { member ->
-                com.woxloi.questplugin.ActiveQuestManager.getPlayerData(member.uniqueId)?.deathCount ?: 0
+                com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(member.uniqueId)?.deathCount ?: 0
             }
             val remainingLives = (totalMaxLives - totalDeaths).coerceAtLeast(0)
 

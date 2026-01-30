@@ -5,7 +5,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import com.woxloi.questplugin.ActiveQuestManager
+import com.woxloi.questplugin.manager.ActiveQuestManager
 import com.woxloi.questplugin.QuestPlugin
 
 class QuestLeaveCommand(plugin: QuestPlugin) : CommandExecutor {
@@ -16,12 +16,12 @@ class QuestLeaveCommand(plugin: QuestPlugin) : CommandExecutor {
         }
         val player = sender
 
-        if (!com.woxloi.questplugin.ActiveQuestManager.isQuesting(player)) {
+        if (!com.woxloi.questplugin.manager.ActiveQuestManager.isQuesting(player)) {
             player.sendMessage(QuestPlugin.prefix + "§c§l現在進行中のクエストはありません")
             return true
         }
 
-        com.woxloi.questplugin.ActiveQuestManager.cancelQuest(player)
+        com.woxloi.questplugin.manager.ActiveQuestManager.cancelQuest(player)
         player.sendMessage(QuestPlugin.prefix + "§a§lクエストを中断しました")
 
         return true

@@ -6,15 +6,15 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
-import com.woxloi.questplugin.ActiveQuestManager
-import com.woxloi.questplugin.QuestConfigManager
+import com.woxloi.questplugin.manager.ActiveQuestManager
+import com.woxloi.questplugin.manager.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
 
 class QuestReloadCommand(private val plugin: JavaPlugin) : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
         QuestConfigManager.loadAllQuests()
         for (player in Bukkit.getOnlinePlayers()) {
-            com.woxloi.questplugin.ActiveQuestManager.cancelQuest(player)
+            com.woxloi.questplugin.manager.ActiveQuestManager.cancelQuest(player)
         }
         plugin.reloadConfig()
         sender.sendMessage(QuestPlugin.prefix + "§a§lクエスト設定を再読み込みしました")

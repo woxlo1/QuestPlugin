@@ -1,5 +1,8 @@
-package com.woxloi.questplugin
+package com.woxloi.questplugin.manager
 
+import com.woxloi.questplugin.QuestPlugin
+import com.woxloi.questplugin.model.QuestData
+import com.woxloi.questplugin.model.QuestType
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
@@ -10,9 +13,6 @@ object QuestConfigManager {
 
     val quests = mutableMapOf<String, QuestData>()
 
-    var questWorld: String = "world"
-        private set
-
     fun loadAllQuests() {
         if (!questFile.exists()) {
             questFile.parentFile.mkdirs()
@@ -20,8 +20,6 @@ object QuestConfigManager {
         }
 
         config = YamlConfiguration.loadConfiguration(questFile)
-
-        questWorld = config.getString("questWorld") ?: "world"
 
         quests.clear()
 
@@ -80,8 +78,6 @@ object QuestConfigManager {
 
     fun saveAllQuests() {
         val root = YamlConfiguration()
-
-        root.set("questWorld", questWorld)
 
         for ((id, data) in quests) {
             val path = "quests.$id"

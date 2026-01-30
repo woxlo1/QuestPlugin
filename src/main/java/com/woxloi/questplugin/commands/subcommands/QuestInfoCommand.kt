@@ -6,8 +6,8 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
-import com.woxloi.questplugin.ActiveQuestManager
-import com.woxloi.questplugin.QuestConfigManager
+import com.woxloi.questplugin.manager.ActiveQuestManager
+import com.woxloi.questplugin.manager.QuestConfigManager
 import com.woxloi.questplugin.QuestPlugin
 import com.woxloi.questplugin.party.PartyManager
 import net.kyori.adventure.text.event.ClickEvent.runCommand
@@ -42,7 +42,7 @@ class QuestInfoCommand(private val plugin: JavaPlugin) : CommandExecutor {
             val uniqueMembers = partyMembers.distinctBy { it.uniqueId }
             val totalMaxLives = quest.maxLives!! * uniqueMembers.size
             val totalDeaths = uniqueMembers.sumOf { member ->
-                com.woxloi.questplugin.ActiveQuestManager.getPlayerData(member.uniqueId)?.deathCount ?: 0
+                com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(member.uniqueId)?.deathCount ?: 0
             }
             val remainingLives = (totalMaxLives - totalDeaths).coerceAtLeast(0)
 

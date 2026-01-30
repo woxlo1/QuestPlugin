@@ -1,4 +1,4 @@
-package com.woxloi.questplugin
+package com.woxloi.questplugin.model
 
 enum class QuestType(val displayName: String) {
 

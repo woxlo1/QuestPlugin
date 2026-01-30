@@ -1,4 +1,4 @@
-package com.woxloi.questplugin
+package com.woxloi.questplugin.model
 
 data class QuestData(
     val id: String,

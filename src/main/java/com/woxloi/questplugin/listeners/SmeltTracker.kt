@@ -8,8 +8,8 @@ import org.bukkit.event.inventory.FurnaceSmeltEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.inventory.InventoryType
-import com.woxloi.questplugin.ActiveQuestManager
-import com.woxloi.questplugin.QuestType
+import com.woxloi.questplugin.manager.ActiveQuestManager
+import com.woxloi.questplugin.model.QuestType
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -64,12 +64,12 @@ object SmeltTracker : Listener {
             Bukkit.getLogger().info("[QuestPlugin] Smelt event: no recent smelter found")
             return
         }
-        if (!com.woxloi.questplugin.ActiveQuestManager.isQuesting(player)) {
+        if (!com.woxloi.questplugin.manager.ActiveQuestManager.isQuesting(player)) {
             Bukkit.getLogger().info("[QuestPlugin] Player ${player.name} is not questing")
             return
         }
 
-        val quest = com.woxloi.questplugin.ActiveQuestManager.getQuest(player) ?: run {
+        val quest = com.woxloi.questplugin.manager.ActiveQuestManager.getQuest(player) ?: run {
             Bukkit.getLogger().info("[QuestPlugin] Player ${player.name} has no active quest")
             return
         }
@@ -85,7 +85,7 @@ object SmeltTracker : Listener {
 
         if (targetItem != "any" && targetItem != smeltedItem) return
 
-        com.woxloi.questplugin.ActiveQuestManager.addProgress(player, 1)
+        com.woxloi.questplugin.manager.ActiveQuestManager.addProgress(player, 1)
         Bukkit.getLogger().info("[QuestPlugin] Progress added for player ${player.name}")
     }
 }
