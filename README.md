@@ -84,8 +84,6 @@ dependencies {
 }
 ```
 
-詳細は[データベースセットアップガイド](DATABASE_SETUP.md)を参照
-
 ---
 
 ## 📜 コマンド一覧

@@ -5,11 +5,12 @@ plugins {
 }
 
 group = 'com.woxloi'
-version = '2.20'
+version = '2.30'
 
 repositories {
     mavenCentral()
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    maven { url = "https://repo.citizensnpcs.co/" }
     maven { url = 'https://jitpack.io' }
     maven { url = 'https://mvn.lumine.io/repository/maven-public/' }// Mythic API
     maven { url = 'https://maven.enginehub.org/repo/' }
@@ -36,6 +37,13 @@ dependencies {
 
     implementation "com.zaxxer:HikariCP:5.0.1" // コネクションプール
     implementation "mysql:mysql-connector-java:8.0.33"
+
+    // Citizens
+    compileOnly "net.citizensnpcs:citizensapi:2.0.31-SNAPSHOT"
+    compileOnly "net.citizensnpcs:citizens-main:2.0.31-SNAPSHOT"
+
+    implementation "org.graalvm.polyglot:polyglot:23.1.0"
+    implementation "org.graalvm.polyglot:js:23.1.0"
 
     // libs フォルダの jar
     implementation fileTree(dir: 'libs', include: '*.jar')

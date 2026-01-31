@@ -1,5 +1,6 @@
 package com.woxloi.questplugin.commands
 
+import QuestChainCommand
 import com.shojabon.mcutils.Utils.SCommandRouter.SCommandArgument
 import com.shojabon.mcutils.Utils.SCommandRouter.SCommandArgumentType
 import com.shojabon.mcutils.Utils.SCommandRouter.SCommandObject
@@ -247,6 +248,39 @@ class QuestCommand : SCommandRouter() {
 
         addCommand(
             SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("chains"))
+                .addRequiredPermission("quest.chain.list")
+                .addExplanation("ストーリークエスト一覧")
+                .setExecutor(QuestChainCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("chain"))
+                .addArgument(SCommandArgument().addAlias("チェーンID"))
+                .addRequiredPermission("quest.chain")
+                .addExplanation("チェーンの進行状況")
+                .setExecutor(QuestChainCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("daily"))
+                .addRequiredPermission("quest.daily")
+                .addExplanation("デイリークエストを表示")
+                .setExecutor(DailyWeeklyQuestCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("weekly"))
+                .addRequiredPermission("quest.weekly")
+                .addExplanation("ウィークリークエストを表示")
+                .setExecutor(DailyWeeklyQuestCommand())
+        )
+
+        addCommand(
+            SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("deposit"))
                 .addArgument(SCommandArgument().addAlias("プレイヤー名").addAllowedType(SCommandArgumentType.ONLINE_PLAYER))
                 .addArgument(SCommandArgument().addAlias("金額"))
@@ -280,6 +314,46 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(QuestLeaveCommand(plugin))
         )
 
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("npc"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAlias("クエスト名"))
+                .addRequiredPermission("quest.npc.set")
+                .addExplanation("NPCにクエストを設定する")
+                .setExecutor(NPCQuestCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("npc"))
+                .addArgument(SCommandArgument().addAllowedString("greeting"))
+                .addArgument(SCommandArgument().addAlias("NPCID"))
+                .addArgument(SCommandArgument().addAlias("メッセージ"))
+                .addRequiredPermission("quest.npc.greeting")
+                .addExplanation("NPCにクエストを設定する")
+                .setExecutor(NPCQuestCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("npc"))
+                .addArgument(SCommandArgument().addAllowedString("remove"))
+                .addArgument(SCommandArgument().addAlias("NPCID"))
+                .addRequiredPermission("quest.npc.remove")
+                .addExplanation("NPCにクエストを設定する")
+                .setExecutor(NPCQuestCommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("npc"))
+                .addArgument(SCommandArgument().addAllowedString("info"))
+                .addArgument(SCommandArgument().addAlias("NPCID"))
+                .addRequiredPermission("quest.npc.info")
+                .addExplanation("NPCにクエストを設定する")
+                .setExecutor(NPCQuestCommand())
+        )
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("party"))

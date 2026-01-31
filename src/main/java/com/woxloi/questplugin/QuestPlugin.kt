@@ -4,6 +4,10 @@ import org.bukkit.plugin.java.JavaPlugin
 import com.woxloi.questplugin.commands.QuestCommand
 import com.woxloi.questplugin.listeners.*
 import com.woxloi.questplugin.database.DatabaseManager
+import com.woxloi.questplugin.features.DailyQuestManager
+import com.woxloi.questplugin.features.QuestChainManager
+import com.woxloi.questplugin.features.QuestScriptEngine
+import com.woxloi.questplugin.integrations.CitizensIntegration
 import com.woxloi.questplugin.manager.ActiveQuestManager
 import com.woxloi.questplugin.manager.QuestConfigManager
 
@@ -38,11 +42,28 @@ class QuestPlugin : JavaPlugin() {
             logger.severe(e.message)
         }
 
+        // スクリプトエンジン初期化
+        try {
+            QuestScriptEngine.init()
+            logger.info("§a[QuestPlugin] スクリプトエンジンを有効化しました")
+        } catch (e: Exception) {
+            logger.warning("§e[QuestPlugin] スクリプトエンジンの初期化に失敗")
+        }
+
+        if (server.pluginManager.getPlugin("Citizens") != null) {
+            server.pluginManager.registerEvents(CitizensIntegration(), this)
+            logger.info("§a[QuestPlugin] Citizens連携を有効化しました")
+        }
+
         // クエスト設定読み込み
         QuestConfigManager.loadAllQuests()
 
         // アクティブクエスト管理初期化
         ActiveQuestManager.init()
+
+        DailyQuestManager.init()
+
+        QuestChainManager.init()
 
         // コマンド登録
         commandRouter = QuestCommand()
@@ -63,6 +84,10 @@ class QuestPlugin : JavaPlugin() {
     override fun onDisable() {
         // アクティブクエスト終了処理
         ActiveQuestManager.shutdown()
+
+        QuestScriptEngine.shutdown()
+
+        DailyQuestManager.cleanupOldData()
 
         // データベース接続を閉じる
         DatabaseManager.close()

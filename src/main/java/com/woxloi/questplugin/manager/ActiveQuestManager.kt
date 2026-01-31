@@ -16,6 +16,8 @@ import com.woxloi.questplugin.QuestPlugin.Companion.plugin
 import com.woxloi.questplugin.party.PartyManager
 import com.woxloi.questplugin.utils.ItemBackup
 import com.woxloi.questplugin.database.DatabaseManager
+import com.woxloi.questplugin.features.QuestChainManager
+import com.woxloi.questplugin.features.QuestScriptEngine
 import com.woxloi.questplugin.model.QuestData
 import com.woxloi.questplugin.model.QuestType
 import java.io.File
@@ -573,6 +575,9 @@ object ActiveQuestManager {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("%player%", member.name))
             }
 
+            // スクリプト実行
+            QuestScriptEngine.onQuestStart(player, quest)
+
             if (quest.teleportWorld != null && quest.teleportX != null && quest.teleportY != null && quest.teleportZ != null) {
                 Bukkit.getWorld(quest.teleportWorld!!)?.let { w ->
                     val loc = Location(w, quest.teleportX!!, quest.teleportY!!, quest.teleportZ!!)
@@ -635,6 +640,9 @@ object ActiveQuestManager {
             member.health = 0.0
         }
 
+        // スクリプト実行
+        QuestScriptEngine.onQuestFail(player, data.quest)
+
         if (PartyManager.disbandParty(player)) {
             player.sendMessage(QuestPlugin.prefix + "§a§lクエストが終了とともにパーティーが解散されました")
         } else {
@@ -674,6 +682,12 @@ object ActiveQuestManager {
                 Bukkit.getScheduler().runTask(plugin, Runnable {
                     member.gameMode = GameMode.SURVIVAL
                 })
+
+                // スクリプト実行
+                QuestScriptEngine.onQuestComplete(player, data.quest)
+
+                // チェーン進行処理を追加
+                QuestChainManager.onQuestComplete(player, data.quest.id)
 
                 addQuestHistory(member.uniqueId, memberData, true)
                 member.sendMessage(QuestPlugin.prefix + "§a§lクエスト${memberData.quest.name}をクリアしました！")
@@ -717,6 +731,9 @@ object ActiveQuestManager {
         val uuid = player.uniqueId
         val data = activeQuests[uuid] ?: return
         data.progress += amount
+
+        // スクリプト実行
+        QuestScriptEngine.onQuestProgress(player, data.quest, data.progress)
 
         // データベースに保存（非同期）
         saveProgressAsync(player)
