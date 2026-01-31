@@ -43,7 +43,11 @@ object QuestScriptEngine {
 
     private fun loadAllScripts() {
         scriptFolder.listFiles()?.forEach { file ->
-            if (file.extension == "js") loadScript(file)
+            if (file.extension == "js") {
+                loadScript(file)
+            } else {
+                QuestPlugin.plugin.logger.info("[QuestScript] スキップ: ${file.name} (拡張子が.jsではありません)")
+            }
         }
         QuestPlugin.plugin.logger.info("[QuestScript] ${questScripts.size}個のスクリプトを読み込みました")
     }
@@ -51,25 +55,37 @@ object QuestScriptEngine {
     fun loadScript(file: File) {
         if (!isEnabled) return
 
+        val questId = file.nameWithoutExtension
+        val cx = RhinoContext.enter()
+        cx.optimizationLevel = -1
+
         try {
-            val questId = file.nameWithoutExtension
-            val cx = RhinoContext.enter()
-            cx.optimizationLevel = -1
+
             val scope = cx.initStandardObjects()
 
-            // グローバル関数登録
+            // JS 側 quest オブジェクト
+            val questObj = cx.newObject(scope)
+            scope.put("quest", scope, questObj)
+
+            // ユーティリティ関数登録
             registerGlobalFunctions(scope)
 
-            // スクリプト実行
+            // スクリプト読み込み
             cx.evaluateString(scope, file.readText(), file.name, 1, null)
+
+            // Kotlin 側で quest.onStart などを取得
+            val onStart = (questObj.get("onStart", questObj) as? Function)
+            val onProgress = (questObj.get("onProgress", questObj) as? Function)
+            val onComplete = (questObj.get("onComplete", questObj) as? Function)
+            val onFail = (questObj.get("onFail", questObj) as? Function)
 
             val script = QuestScript(
                 questId = questId,
                 scope = scope,
-                onStart = scope.get("onStart", scope) as? Function,
-                onProgress = scope.get("onProgress", scope) as? Function,
-                onComplete = scope.get("onComplete", scope) as? Function,
-                onFail = scope.get("onFail", scope) as? Function
+                onStart = onStart,
+                onProgress = onProgress,
+                onComplete = onComplete,
+                onFail = onFail
             )
 
             questScripts[questId] = script
@@ -85,11 +101,12 @@ object QuestScriptEngine {
     }
 
     private fun registerGlobalFunctions(scope: Scriptable) {
-        // quest オブジェクト
-        val questObj = ScriptQuestAPI()
-        scope.put("quest", scope, questObj)
+        // quest オブジェクトは loadScript 内で作って JS スクリプトで設定済みなので
+        // 上書きしてはいけない
+        // val questObj = ScriptQuestAPI()
+        // scope.put("quest", scope, questObj)
 
-        // ユーティリティ関数
+        // ユーティリティ関数だけ登録
         scope.put("summonBoss", scope, ScriptUtilities::summonBoss)
         scope.put("fireworks", scope, ScriptUtilities::fireworks)
         scope.put("broadcastMessage", scope, ScriptUtilities::broadcastMessage)
@@ -136,7 +153,7 @@ object QuestScriptEngine {
 サンプル: dragon_slayer.js を参照してください
         """.trimIndent())
 
-        val dragonScript = File(scriptFolder, "dragon_slayer.js.example")
+        val dragonScript = File(scriptFolder, "dragon_slayer.js")
         dragonScript.writeText("""
 // ドラゴン討伐クエストのスクリプト例
 // 使用方法: このファイルを dragon_slayer.js にリネームしてください
