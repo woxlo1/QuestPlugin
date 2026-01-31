@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.woxloi'
-version = '2.40'
+version = '2.41'
 
 repositories {
     mavenCentral()
@@ -43,8 +43,7 @@ dependencies {
     // Citizens
     compileOnly "net.citizensnpcs:citizensapi:2.0.31-SNAPSHOT"
 
-    implementation "org.graalvm.polyglot:polyglot:23.1.0"
-    implementation "org.graalvm.polyglot:js:23.1.0"
+    implementation "org.mozilla:rhino:1.7.14"
 
     // libs フォルダの jar
     implementation fileTree(dir: 'libs', include: '*.jar')
