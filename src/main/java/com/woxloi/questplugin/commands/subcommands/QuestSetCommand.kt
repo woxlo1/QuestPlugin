@@ -61,7 +61,7 @@ class QuestSetCommand(private val plugin: JavaPlugin) : CommandExecutor {
             return sender.fail("数値のパースに失敗しました")
         }
 
-        sender.sendMessage(QuestPlugin.prefix + "§b§lクエスト名" + id + "の§f§l" + key + "を§a§l" + value + "§f§lに設定しました")
+        sender.sendMessage(QuestPlugin.prefix + "§b§l" + id + "§f§lの" + key + "を§a§l" + value + "§f§lに設定しました")
         return true
     }
 

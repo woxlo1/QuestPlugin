@@ -1,0 +1,14 @@
+chains:
+  hero_story:
+    name: "§6§l英雄の物語"
+    description: "村を救う英雄になろう"
+    quests:
+      - id: chapter1_intro
+        name: "§e第1章: 始まり"
+        unlock: null
+
+      - id: chapter1_battle
+        name: "§e第1章: 戦い"
+        unlock:
+          quest: chapter1_intro
+          status: COMPLETED

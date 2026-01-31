@@ -1,0 +1,16 @@
+daily:
+  enabled: true
+  reset_time: "04:00"
+  count: 3
+  pool:
+    - daily_gather_wood
+    - daily_kill_zombies
+    - daily_mine_stone
+
+weekly:
+  enabled: true
+  reset_day: MONDAY
+  reset_time: "04:00"
+  count: 1
+  pool:
+    - weekly_boss_raid

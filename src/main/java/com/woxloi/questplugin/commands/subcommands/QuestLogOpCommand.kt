@@ -22,7 +22,7 @@ class QuestLogOpCommand(private val plugin: QuestPlugin) : CommandExecutor {
         val targetPlayer = Bukkit.getOfflinePlayer(targetName)
 
         if (targetPlayer == null || (!targetPlayer.hasPlayedBefore() && !targetPlayer.isOnline)) {
-            sender.sendMessage(QuestPlugin.prefix + "§c§lプレイヤー$targetName は存在しません")
+            sender.sendMessage(QuestPlugin.prefix + "§c§l${targetName}は存在しません")
             return true
         }
 
