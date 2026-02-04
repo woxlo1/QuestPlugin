@@ -1,6 +1,6 @@
 name: QuestPlugin
 main: com.woxloi.questplugin.QuestPlugin
-version: 2.2
+version: 2.41
 api-version: 1.19
 depend: [MythicMobs]
 softdepend: [Vault]
