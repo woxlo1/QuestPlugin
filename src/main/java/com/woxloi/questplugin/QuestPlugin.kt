@@ -5,10 +5,13 @@ import com.woxloi.questplugin.commands.QuestCommand
 import com.woxloi.questplugin.listeners.*
 import com.woxloi.questplugin.database.DatabaseManager
 import com.woxloi.questplugin.features.DailyQuestManager
+import com.woxloi.questplugin.features.PlayerQuestBoardGUI
 import com.woxloi.questplugin.features.QuestChainManager
+import com.woxloi.questplugin.features.QuestListGUI
 import com.woxloi.questplugin.features.QuestScriptEngine
 import com.woxloi.questplugin.integrations.CitizensIntegration
 import com.woxloi.questplugin.manager.ActiveQuestManager
+import com.woxloi.questplugin.manager.PlayerQuestManager
 import com.woxloi.questplugin.manager.QuestConfigManager
 
 class QuestPlugin : JavaPlugin() {
@@ -26,10 +29,9 @@ class QuestPlugin : JavaPlugin() {
     override fun onEnable() {
         plugin = this
 
-        // 設定ファイルの保存
         saveDefaultConfig()
 
-        // データベース初期化（最優先）
+        // データベース初期化
         try {
             DatabaseManager.init(this)
             if (DatabaseManager.isEnabled()) {
@@ -62,8 +64,10 @@ class QuestPlugin : JavaPlugin() {
         ActiveQuestManager.init()
 
         DailyQuestManager.init()
-
         QuestChainManager.init()
+
+        // 民間クエスト初期化
+        PlayerQuestManager.init()
 
         // コマンド登録
         commandRouter = QuestCommand()
@@ -74,6 +78,9 @@ class QuestPlugin : JavaPlugin() {
         server.pluginManager.registerEvents(SmeltTracker, this)
         server.pluginManager.registerEvents(QuestDeathListener(this), this)
 
+        // GUI系リスナー（SInventoryが自己管理するため登録不要だが、objectシングルトンは登録する）
+        server.pluginManager.registerEvents(PlayerQuestProgressListener(), this)
+
         // コマンド設定
         getCommand("quest")!!.setExecutor(commandRouter)
         getCommand("quest")!!.tabCompleter = commandRouter
@@ -82,14 +89,10 @@ class QuestPlugin : JavaPlugin() {
     }
 
     override fun onDisable() {
-        // アクティブクエスト終了処理
         ActiveQuestManager.shutdown()
-
         QuestScriptEngine.shutdown()
-
         DailyQuestManager.cleanupOldData()
-
-        // データベース接続を閉じる
+        PlayerQuestManager.save()
         DatabaseManager.close()
 
         logger.info("§a[QuestPlugin] プラグインが無効化されました")

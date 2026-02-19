@@ -127,9 +127,22 @@ object DatabaseManager {
                         INDEX idx_completed (completed_at)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
                 """)
+
+                // ★★★ quest_chain_progressテーブル（新規追加）★★★
+                stmt.executeUpdate("""
+                    CREATE TABLE IF NOT EXISTS quest_chain_progress (
+                        player_uuid VARCHAR(36) NOT NULL,
+                        chain_id VARCHAR(50) NOT NULL,
+                        current_quest VARCHAR(50),
+                        completed_quests TEXT,
+                        updated_at BIGINT NOT NULL,
+                        PRIMARY KEY (player_uuid, chain_id),
+                        INDEX idx_updated (updated_at)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                """)
             }
         }
-        plugin.logger.info("§a[QuestPlugin] テーブル作成完了")
+        plugin.logger.info("§a[QuestPlugin] テーブル作成完了（チェーン進行状況テーブル含む）")
     }
 
     /**
@@ -458,6 +471,157 @@ object DatabaseManager {
             return 0
         }
     }
+
+    // ==================== ★★★ クエストチェーン進行状況（新規追加）★★★ ====================
+
+    /**
+     * チェーン進行状況を保存
+     */
+    fun saveChainProgress(uuid: UUID, chainId: String, currentQuest: String?, completedQuests: Set<String>) {
+        if (!enabled) return
+
+        try {
+            getConnection().use { conn ->
+                val completedQuestsStr = completedQuests.joinToString(",")
+                val sql = """
+                    INSERT INTO quest_chain_progress (player_uuid, chain_id, current_quest, completed_quests, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                        current_quest = VALUES(current_quest),
+                        completed_quests = VALUES(completed_quests),
+                        updated_at = VALUES(updated_at)
+                """
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setString(1, uuid.toString())
+                    stmt.setString(2, chainId)
+                    stmt.setString(3, currentQuest)
+                    stmt.setString(4, completedQuestsStr)
+                    stmt.setLong(5, System.currentTimeMillis())
+                    stmt.executeUpdate()
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.log(Level.SEVERE, "チェーン進行状況保存エラー", e)
+        }
+    }
+
+    /**
+     * チェーン進行状況を取得
+     */
+    fun loadChainProgress(uuid: UUID, chainId: String): ChainProgressData? {
+        if (!enabled) return null
+
+        try {
+            getConnection().use { conn ->
+                val sql = """
+                    SELECT current_quest, completed_quests
+                    FROM quest_chain_progress
+                    WHERE player_uuid = ? AND chain_id = ?
+                """
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setString(1, uuid.toString())
+                    stmt.setString(2, chainId)
+                    val rs = stmt.executeQuery()
+
+                    return if (rs.next()) {
+                        val completedQuestsStr = rs.getString("completed_quests") ?: ""
+                        val completedQuests = if (completedQuestsStr.isNotEmpty()) {
+                            completedQuestsStr.split(",").toMutableSet()
+                        } else {
+                            mutableSetOf()
+                        }
+
+                        ChainProgressData(
+                            currentQuest = rs.getString("current_quest"),
+                            completedQuests = completedQuests
+                        )
+                    } else null
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.log(Level.SEVERE, "チェーン進行状況読み込みエラー", e)
+            return null
+        }
+    }
+
+    /**
+     * 全プレイヤーの全チェーン進行状況を取得
+     */
+    fun loadAllChainProgress(): Map<UUID, MutableMap<String, ChainProgressData>> {
+        if (!enabled) return emptyMap()
+
+        val result = mutableMapOf<UUID, MutableMap<String, ChainProgressData>>()
+        try {
+            getConnection().use { conn ->
+                val sql = "SELECT player_uuid, chain_id, current_quest, completed_quests FROM quest_chain_progress"
+                conn.createStatement().use { stmt ->
+                    val rs = stmt.executeQuery(sql)
+
+                    while (rs.next()) {
+                        val uuid = UUID.fromString(rs.getString("player_uuid"))
+                        val chainId = rs.getString("chain_id")
+
+                        val completedQuestsStr = rs.getString("completed_quests") ?: ""
+                        val completedQuests = if (completedQuestsStr.isNotEmpty()) {
+                            completedQuestsStr.split(",").toMutableSet()
+                        } else {
+                            mutableSetOf()
+                        }
+
+                        val progress = ChainProgressData(
+                            currentQuest = rs.getString("current_quest"),
+                            completedQuests = completedQuests
+                        )
+
+                        result.getOrPut(uuid) { mutableMapOf() }[chainId] = progress
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.log(Level.SEVERE, "全チェーン進行状況読み込みエラー", e)
+        }
+        return result
+    }
+
+    /**
+     * プレイヤーの全チェーン進行状況を取得
+     */
+    fun loadPlayerChainProgress(uuid: UUID): MutableMap<String, ChainProgressData> {
+        if (!enabled) return mutableMapOf()
+
+        val result = mutableMapOf<String, ChainProgressData>()
+        try {
+            getConnection().use { conn ->
+                val sql = """
+                    SELECT chain_id, current_quest, completed_quests
+                    FROM quest_chain_progress
+                    WHERE player_uuid = ?
+                """
+                conn.prepareStatement(sql).use { stmt ->
+                    stmt.setString(1, uuid.toString())
+                    val rs = stmt.executeQuery()
+
+                    while (rs.next()) {
+                        val chainId = rs.getString("chain_id")
+                        val completedQuestsStr = rs.getString("completed_quests") ?: ""
+                        val completedQuests = if (completedQuestsStr.isNotEmpty()) {
+                            completedQuestsStr.split(",").toMutableSet()
+                        } else {
+                            mutableSetOf()
+                        }
+
+                        result[chainId] = ChainProgressData(
+                            currentQuest = rs.getString("current_quest"),
+                            completedQuests = completedQuests
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            plugin.logger.log(Level.SEVERE, "プレイヤーチェーン進行状況読み込みエラー", e)
+        }
+        return result
+    }
 }
 
 // ==================== データクラス ====================
@@ -488,4 +652,10 @@ data class QuestHistoryData(
     val progress: Int,
     val deathCount: Int,
     val completedAt: Long
+)
+
+// ★★★ チェーン進行状況データクラス（新規追加）★★★
+data class ChainProgressData(
+    val currentQuest: String?,
+    val completedQuests: MutableSet<String>
 )

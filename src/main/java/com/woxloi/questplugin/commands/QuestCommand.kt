@@ -12,6 +12,7 @@ import com.woxloi.questplugin.commands.subcommands.*
 class QuestCommand : SCommandRouter() {
 
     val partyCommand = QuestPartyCommand()
+    private val playerQuestCommand = PlayerQuestCommand()
 
     init {
         registerCommands()
@@ -26,6 +27,7 @@ class QuestCommand : SCommandRouter() {
 
     fun registerCommands() {
 
+        // ─── 設定コマンド ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("config"))
@@ -105,6 +107,7 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("クエストの制限時間を設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
+
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("config"))
@@ -197,7 +200,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("teleportworld"))
                 .addArgument(SCommandArgument().addAlias("テレポートワールド"))
                 .addRequiredPermission("quest.config.teleportworld")
-                .addExplanation("クエスト完了時のテレポート先ワールドを設定する")
+                .addExplanation("テレポート先ワールドを設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
 
@@ -209,7 +212,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("teleportx"))
                 .addArgument(SCommandArgument().addAlias("テレポートX座標"))
                 .addRequiredPermission("quest.config.teleportx")
-                .addExplanation("クエスト完了時のテレポート先X座標を設定する")
+                .addExplanation("テレポート先X座標を設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
 
@@ -221,7 +224,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("teleporty"))
                 .addArgument(SCommandArgument().addAlias("テレポートY座標"))
                 .addRequiredPermission("quest.config.teleporty")
-                .addExplanation("クエスト完了時のテレポート先Y座標を設定する")
+                .addExplanation("テレポート先Y座標を設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
 
@@ -233,7 +236,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("teleportz"))
                 .addArgument(SCommandArgument().addAlias("テレポートZ座標"))
                 .addRequiredPermission("quest.config.teleportz")
-                .addExplanation("クエスト完了時のテレポート先Z座標を設定する")
+                .addExplanation("テレポート先Z座標を設定する")
                 .setExecutor(QuestSetCommand(plugin))
         )
 
@@ -246,6 +249,7 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(QuestSaveConfigCommand(plugin))
         )
 
+        // ─── チェーン ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("chains"))
@@ -263,6 +267,7 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(QuestChainCommand())
         )
 
+        // ─── デイリー/ウィークリー ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("daily"))
@@ -279,6 +284,7 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(DailyWeeklyQuestCommand())
         )
 
+        // ─── 経済 ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("deposit"))
@@ -288,6 +294,7 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("指定プレイヤーにお金を付与する")
                 .setExecutor(QuestDepositCommand())
         )
+
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("withdraw"))
@@ -297,6 +304,8 @@ class QuestCommand : SCommandRouter() {
                 .addExplanation("指定プレイヤーからお金を引き出す")
                 .setExecutor(QuestWithdrawCommand())
         )
+
+        // ─── クエスト操作 ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("info"))
@@ -316,6 +325,41 @@ class QuestCommand : SCommandRouter() {
 
         addCommand(
             SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("start"))
+                .addArgument(SCommandArgument().addAlias("クエストID"))
+                .addRequiredPermission("quest.start")
+                .addExplanation("クエストを開始する")
+                .setExecutor(QuestStartCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("list"))
+                .addRequiredPermission("quest.list")
+                .addExplanation("現在使用可能なクエストを見る")
+                .setExecutor(QuestListCommand(plugin))
+        )
+
+        // GUIで一覧を開く
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("gui"))
+                .addRequiredPermission("quest.use")
+                .addExplanation("クエスト一覧GUIを開く")
+                .setExecutor(QuestGUICommand())
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("reload"))
+                .addRequiredPermission("quest.reload")
+                .addExplanation("クエスト設定を再読み込みする")
+                .setExecutor(QuestReloadCommand(plugin))
+        )
+
+        // ─── NPC ───
+        addCommand(
+            SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("npc"))
                 .addArgument(SCommandArgument().addAllowedString("set"))
                 .addArgument(SCommandArgument().addAlias("クエスト名"))
@@ -331,7 +375,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAlias("NPCID"))
                 .addArgument(SCommandArgument().addAlias("メッセージ"))
                 .addRequiredPermission("quest.npc.greeting")
-                .addExplanation("NPCにクエストを設定する")
+                .addExplanation("NPCの挨拶を設定する")
                 .setExecutor(NPCQuestCommand())
         )
 
@@ -341,7 +385,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("remove"))
                 .addArgument(SCommandArgument().addAlias("NPCID"))
                 .addRequiredPermission("quest.npc.remove")
-                .addExplanation("NPCにクエストを設定する")
+                .addExplanation("NPCのクエスト設定を削除する")
                 .setExecutor(NPCQuestCommand())
         )
 
@@ -351,9 +395,11 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("info"))
                 .addArgument(SCommandArgument().addAlias("NPCID"))
                 .addRequiredPermission("quest.npc.info")
-                .addExplanation("NPCにクエストを設定する")
+                .addExplanation("NPCのクエスト情報を表示する")
                 .setExecutor(NPCQuestCommand())
         )
+
+        // ─── パーティー ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("party"))
@@ -419,30 +465,7 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(partyCommand)
         )
 
-        addCommand(
-            SCommandObject()
-                .addArgument(SCommandArgument().addAllowedString("reload"))
-                .addRequiredPermission("quest.reload")
-                .addExplanation("クエスト設定を再読み込みする")
-                .setExecutor(QuestReloadCommand(plugin))
-        )
-
-        addCommand(
-            SCommandObject()
-                .addArgument(SCommandArgument().addAllowedString("start"))
-                .addArgument(SCommandArgument().addAlias("クエストID"))
-                .addRequiredPermission("quest.start")
-                .addExplanation("クエストを開始する")
-                .setExecutor(QuestStartCommand(plugin))
-        )
-
-        addCommand(
-            SCommandObject()
-                .addArgument(SCommandArgument().addAllowedString("list"))
-                .addRequiredPermission("quest.list")
-                .addExplanation("現在使用可能なクエストを見る")
-                .setExecutor(QuestListCommand(plugin))
-        )
+        // ─── ログ ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("logop"))
@@ -453,12 +476,13 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(QuestLogOpCommand(plugin))
         )
 
+        // ─── ストレージ ───
         addCommand(
             SCommandObject()
                 .addArgument(SCommandArgument().addAllowedString("storage"))
                 .addArgument(SCommandArgument().addAlias("モード").addAllowedString("mysql"))
                 .addRequiredPermission("quest.storage")
-                .addExplanation("ストレージモードを確認・切り替える")
+                .addExplanation("MySQLモードへの切り替え案内")
                 .setExecutor(QuestStorageCommand(plugin))
         )
 
@@ -467,7 +491,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("storage"))
                 .addArgument(SCommandArgument().addAlias("モード").addAllowedString("yaml"))
                 .addRequiredPermission("quest.storage")
-                .addExplanation("ストレージモードを確認・切り替える")
+                .addExplanation("YAMLモードへの切り替え案内")
                 .setExecutor(QuestStorageCommand(plugin))
         )
 
@@ -476,7 +500,7 @@ class QuestCommand : SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("storage"))
                 .addArgument(SCommandArgument().addAlias("モード").addAllowedString("status"))
                 .addRequiredPermission("quest.storage")
-                .addExplanation("ストレージモードを確認・切り替える")
+                .addExplanation("ストレージ詳細情報を表示する")
                 .setExecutor(QuestStorageCommand(plugin))
         )
 
@@ -488,5 +512,153 @@ class QuestCommand : SCommandRouter() {
                 .setExecutor(QuestStorageCommand(plugin))
         )
 
+
+        // ─── 民間クエスト ───
+
+        // /quest player board
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("board"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("民間クエスト掲示板を開く")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player create <タイトル>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("create"))
+                .addArgument(SCommandArgument().addAlias("タイトル"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("民間クエストを作成開始")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set type <タイプ名>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("type"))
+                .addArgument(SCommandArgument().addAlias("タイプ名"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("クエストタイプを設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set target <ターゲット>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("target"))
+                .addArgument(SCommandArgument().addAlias("ターゲット"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("クエストターゲットを設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set amount <数>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("amount"))
+                .addArgument(SCommandArgument().addAlias("数"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("必要数を設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set reward money <金額>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("reward"))
+                .addArgument(SCommandArgument().addAllowedString("money"))
+                .addArgument(SCommandArgument().addAlias("金額"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("金銭報酬を設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set reward item
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("reward"))
+                .addArgument(SCommandArgument().addAllowedString("item"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("手に持っているアイテムを報酬に設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player set maxaccept <人数>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("set"))
+                .addArgument(SCommandArgument().addAllowedString("maxaccept"))
+                .addArgument(SCommandArgument().addAlias("人数"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("最大受注人数を設定する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player publish
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("publish"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("民間クエストを掲示板に投稿する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player cancel
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("cancel"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("クエスト作成をキャンセルする")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player list
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("list"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("受注中の民間クエスト一覧を表示する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player delete <ID>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("delete"))
+                .addArgument(SCommandArgument().addAlias("クエストID"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("自分のクエストを削除する")
+                .setExecutor(playerQuestCommand)
+        )
+
+        // /quest player info <ID>
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("player"))
+                .addArgument(SCommandArgument().addAllowedString("info"))
+                .addArgument(SCommandArgument().addAlias("クエストID"))
+                .addRequiredPermission("quest.player")
+                .addExplanation("クエストの詳細を見る")
+                .setExecutor(playerQuestCommand)
+        )
     }
 }

@@ -3,10 +3,11 @@ main: com.woxloi.questplugin.QuestPlugin
 version: 2.3
 api-version: 1.19
 depend: [MythicMobs]
-softdepend: [Vault]
+softdepend: [Vault, Citizens, WorldEdit, WorldGuard]
 website: https://github.com/woxlo1/QuestPlugin
 authors:
   - woxloi
+
 commands:
   quest:
     description: クエストシステム

@@ -3,9 +3,12 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.8.22'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
-
 group = 'com.woxloi'
+<<<<<<< Updated upstream
 version = '2.30'
+=======
+version = '1.0'
+>>>>>>> Stashed changes
 
 repositories {
     mavenCentral()

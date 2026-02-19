@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import java.io.File
 import java.util.*
+import java.util.logging.Level
 
 /**
  * クエストチェーン（ストーリークエスト）システム
@@ -16,7 +17,9 @@ import java.util.*
 object QuestChainManager {
 
     private val chainFile = File(QuestPlugin.plugin.dataFolder, "quest_chains.yml")
+    private val progressFile = File(QuestPlugin.plugin.dataFolder, "chain_progress.yml")
     private lateinit var config: YamlConfiguration
+    private lateinit var progressConfig: YamlConfiguration
 
     // 全チェーン
     private val chains = mutableMapOf<String, QuestChain>()
@@ -304,6 +307,9 @@ object QuestChainManager {
         chains.forEach { (chainId, chain) ->
             val quest = chain.quests.find { it.id == questId }
             if (quest != null) {
+                // プレイヤーの進行状況を更新
+                updatePlayerProgress(player.uniqueId, chainId, questId)
+
                 // 分岐がある場合
                 if (quest.branches.isNotEmpty()) {
                     showBranchChoice(player, quest, chain)
@@ -335,14 +341,163 @@ object QuestChainManager {
     }
 
     /**
-     * プレイヤー進行状況の保存
+     * プレイヤー進行状況の更新
      */
-    private fun loadPlayerProgress() {
-        // TODO: データベースから読み込み
+    private fun updatePlayerProgress(uuid: UUID, chainId: String, questId: String) {
+        val chainProgress = playerProgress
+            .getOrPut(uuid) { mutableMapOf() }
+            .getOrPut(chainId) { ChainProgress(chainId, null, mutableSetOf()) }
+
+        chainProgress.completedQuests.add(questId)
+        chainProgress.currentQuest = questId
+
+        // データベースに保存（非同期）
+        savePlayerProgressAsync(uuid, chainId, chainProgress)
     }
 
+    /**
+     * プレイヤー進行状況の非同期保存
+     */
+    private fun savePlayerProgressAsync(uuid: UUID, chainId: String, progress: ChainProgress) {
+        if (!DatabaseManager.isEnabled()) {
+            // YAMLに保存
+            savePlayerProgressToYaml()
+            return
+        }
+
+        Bukkit.getScheduler().runTaskAsynchronously(QuestPlugin.plugin, Runnable {
+            try {
+                // ★★★ データベースに保存（実装完了）★★★
+                DatabaseManager.saveChainProgress(uuid, chainId, progress.currentQuest, progress.completedQuests)
+                QuestPlugin.plugin.logger.info("[QuestChain] プレイヤー ${uuid} のチェーン ${chainId} 進行状況を保存しました")
+            } catch (e: Exception) {
+                QuestPlugin.plugin.logger.log(Level.WARNING, "チェーン進行状況の保存に失敗", e)
+                // フォールバック: YAMLに保存
+                savePlayerProgressToYaml()
+            }
+        })
+    }
+
+    /**
+     * プレイヤー進行状況の読み込み
+     */
+    private fun loadPlayerProgress() {
+        if (DatabaseManager.isEnabled()) {
+            loadPlayerProgressFromDatabase()
+        } else {
+            loadPlayerProgressFromYaml()
+        }
+    }
+
+    /**
+     * データベースから進行状況を読み込み
+     */
+    private fun loadPlayerProgressFromDatabase() {
+        Bukkit.getScheduler().runTaskAsynchronously(QuestPlugin.plugin, Runnable {
+            try {
+                // ★★★ データベースから読み込む（実装完了）★★★
+                val dbProgress = DatabaseManager.loadAllChainProgress()
+
+                Bukkit.getScheduler().runTask(QuestPlugin.plugin, Runnable {
+                    for ((uuid, chainMap) in dbProgress) {
+                        val playerChainMap = playerProgress.getOrPut(uuid) { mutableMapOf() }
+
+                        for ((chainId, dbData) in chainMap) {
+                            playerChainMap[chainId] = com.woxloi.questplugin.features.ChainProgress(
+                                chainId = chainId,
+                                currentQuest = dbData.currentQuest,
+                                completedQuests = dbData.completedQuests
+                            )
+                        }
+                    }
+                    QuestPlugin.plugin.logger.info("[QuestChain] データベースから${dbProgress.size}人の進行状況を読み込みました")
+                })
+            } catch (e: Exception) {
+                QuestPlugin.plugin.logger.log(Level.WARNING, "チェーン進行状況の読み込みに失敗。YAMLから読み込みます", e)
+                loadPlayerProgressFromYaml()
+            }
+        })
+    }
+
+    /**
+     * YAMLから進行状況を読み込み
+     */
+    private fun loadPlayerProgressFromYaml() {
+        if (!progressFile.exists()) {
+            progressFile.createNewFile()
+        }
+
+        progressConfig = YamlConfiguration.loadConfiguration(progressFile)
+        val section = progressConfig.getConfigurationSection("progress") ?: return
+
+        for (uuidStr in section.getKeys(false)) {
+            val uuid = try {
+                UUID.fromString(uuidStr)
+            } catch (e: Exception) {
+                continue
+            }
+
+            val playerSection = section.getConfigurationSection(uuidStr) ?: continue
+            val chainMap = mutableMapOf<String, ChainProgress>()
+
+            for (chainId in playerSection.getKeys(false)) {
+                val chainSection = playerSection.getConfigurationSection(chainId) ?: continue
+
+                val currentQuest = chainSection.getString("currentQuest")
+                val completedQuests = chainSection.getStringList("completedQuests").toMutableSet()
+
+                chainMap[chainId] = ChainProgress(
+                    chainId = chainId,
+                    currentQuest = currentQuest,
+                    completedQuests = completedQuests
+                )
+            }
+
+            playerProgress[uuid] = chainMap
+        }
+
+        QuestPlugin.plugin.logger.info("[QuestChain] YAMLから${playerProgress.size}人の進行状況を読み込みました")
+    }
+
+    /**
+     * YAMLに進行状況を保存
+     */
+    private fun savePlayerProgressToYaml() {
+        try {
+            val section = progressConfig.createSection("progress")
+
+            for ((uuid, chainMap) in playerProgress) {
+                val playerSection = section.createSection(uuid.toString())
+
+                for ((chainId, progress) in chainMap) {
+                    val chainSection = playerSection.createSection(chainId)
+                    chainSection.set("currentQuest", progress.currentQuest)
+                    chainSection.set("completedQuests", progress.completedQuests.toList())
+                }
+            }
+
+            progressConfig.save(progressFile)
+            QuestPlugin.plugin.logger.info("[QuestChain] 進行状況をYAMLに保存しました")
+        } catch (e: Exception) {
+            QuestPlugin.plugin.logger.log(Level.WARNING, "チェーン進行状況のYAML保存に失敗", e)
+        }
+    }
+
+    /**
+     * プレイヤー進行状況の保存（公開メソッド）
+     */
     fun savePlayerProgress() {
-        // TODO: データベースに保存
+        if (DatabaseManager.isEnabled()) {
+            // データベースに保存
+            playerProgress.forEach { (uuid, chainMap) ->
+                chainMap.forEach { (chainId, progress) ->
+                    savePlayerProgressAsync(uuid, chainId, progress)
+                }
+            }
+        } else {
+            // YAMLに保存
+            savePlayerProgressToYaml()
+        }
     }
 }
 
@@ -375,7 +530,7 @@ data class QuestBranch(
 
 data class ChainProgress(
     val chainId: String,
-    val currentQuest: String?,
+    var currentQuest: String?,
     val completedQuests: MutableSet<String> = mutableSetOf()
 )
 

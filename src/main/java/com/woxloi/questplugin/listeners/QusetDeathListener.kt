@@ -2,7 +2,6 @@ package com.woxloi.questplugin.listeners
 
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.Location
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
@@ -18,7 +17,7 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
         val player = event.entity
         val uuid = player.uniqueId
 
-        val data = com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(uuid) ?: return
+        val data = ActiveQuestManager.getPlayerData(uuid) ?: return
         val quest = data.quest
 
         val maxLives = quest.maxLives ?: return
@@ -27,9 +26,9 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
         val remainingLives = maxLives - data.deathCount
 
         if (remainingLives > 0) {
-            player.sendMessage(QuestPlugin.prefix + "§c§l残りライフ§f$remainingLives")
+            player.sendMessage(QuestPlugin.prefix + "§c§l残りライフ: §f$remainingLives")
         } else {
-            player.sendMessage(QuestPlugin.prefix + "§c§lあなたは死んだ")
+            player.sendMessage(QuestPlugin.prefix + "§c§lライフが尽きました")
 
             Bukkit.getScheduler().runTask(plugin, Runnable {
                 player.gameMode = GameMode.SPECTATOR
@@ -51,24 +50,22 @@ class QuestDeathListener(private val plugin: JavaPlugin) : Listener {
             val partyMembers = PartyManager.getPartyMembers(player)
 
             val allDead = partyMembers.all { member ->
-                val memberData = com.woxloi.questplugin.manager.ActiveQuestManager.getPlayerData(member.uniqueId)
+                val memberData = ActiveQuestManager.getPlayerData(member.uniqueId)
                 memberData != null && (quest.maxLives ?: 0) <= memberData.deathCount
             }
 
             if (allDead) {
                 partyMembers.forEach {
                     ActiveQuestManager.cancelQuest(it)
-                    it.sendMessage(QuestPlugin.prefix + "§c§l全滅した...")
+                    it.sendMessage(QuestPlugin.prefix + "§c§l全滅しました...")
                 }
             }
-
         } else {
-            // ソロプレイヤーが死亡しきった場合
             if ((quest.maxLives ?: 0) <= data.deathCount) {
-                ActiveQuestManager.cancelQuest(player)
-                player.sendMessage(QuestPlugin.prefix + "§c§lあなたは死んだ")
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    ActiveQuestManager.cancelQuest(player)
+                })
             }
         }
-
     }
 }

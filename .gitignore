@@ -2,6 +2,7 @@
 build/
 bin/
 out/
+libs/
 .idea/
 *.iml
 *.class
