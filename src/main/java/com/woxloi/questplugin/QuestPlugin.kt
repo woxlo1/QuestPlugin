@@ -20,7 +20,7 @@ class QuestPlugin : JavaPlugin() {
         val MoneyPrefix = "§a[§6§lQuest§e§lMoney§6§lPlugin§a]"
         val PartyPrefix = "§a[§6§lQuestPartyPlugin§a]"
         val prefix = "§a[§6§lQuestPlugin§a]"
-        val version = "2025/1/30"
+        val version = "2025/7/2"
 
         lateinit var plugin: QuestPlugin
         lateinit var commandRouter: QuestCommand

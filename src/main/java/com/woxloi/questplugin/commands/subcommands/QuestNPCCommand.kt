@@ -28,7 +28,14 @@ class NPCQuestCommand : CommandExecutor {
             return true
         }
 
-        when (args[0].lowercase()) {
+        // ─── サブコマンドを取得 ───
+        val subCommand = if (args[0].lowercase() == "npc") {
+            args.getOrNull(1)?.lowercase() ?: ""
+        } else {
+            args[0].lowercase()
+        }
+
+        when (subCommand) {
 
             "set" -> {
                 if (args.size < 3) {

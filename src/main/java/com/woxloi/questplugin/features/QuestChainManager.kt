@@ -212,7 +212,7 @@ object QuestChainManager {
     fun showChainProgress(player: Player, chainId: String) {
         val chain = chains[chainId]
         if (chain == null) {
-            player.sendMessage(QuestPlugin.prefix + "§c§lチェーン${chainId}は存在しません")
+            player.sendMessage(QuestPlugin.prefix + "§c§l${chainId}は存在しません")
             return
         }
 

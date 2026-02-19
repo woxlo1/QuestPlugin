@@ -5,178 +5,163 @@ import com.woxloi.questplugin.QuestPlugin
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
-import org.graalvm.polyglot.Context
-import org.graalvm.polyglot.Value
+import org.mozilla.javascript.Context as RhinoContext
+import org.mozilla.javascript.Function
+import org.mozilla.javascript.Scriptable
 import java.io.File
 
 /**
- *  * JavaScriptスクリプトエンジン（GraalVM使用）
+ * JavaScriptスクリプトエンジン（Rhino使用）
  *
  * クエストの動的な振る舞いをJavaScriptで定義できます
  */
 object QuestScriptEngine {
 
     private val scriptFolder = File(QuestPlugin.plugin.dataFolder, "quest_scripts")
-    private val contexts = mutableMapOf<String, Context>()
+    private val contexts = mutableMapOf<String, Scriptable>()
     private val questScripts = mutableMapOf<String, QuestScript>()
+    private var isEnabled = false
 
     fun init() {
-        if (!scriptFolder.exists()) {
-            scriptFolder.mkdirs()
-            createExampleScripts()
-        }
+        try {
+            // スクリプトフォルダ作成
+            if (!scriptFolder.exists()) {
+                scriptFolder.mkdirs()
+                createExampleScripts()
+            }
 
-        loadAllScripts()
+            // Rhinoで全スクリプトを読み込む
+            loadAllScripts()
+            isEnabled = true
+            QuestPlugin.plugin.logger.info("[QuestScript] スクリプトエンジンを有効化しました")
+
+        } catch (e: Exception) {
+            QuestPlugin.plugin.logger.severe("[QuestScript] 初期化エラー: ${e.message}")
+            isEnabled = false
+        }
     }
 
-    /**
-     * 全スクリプトを読み込み
-     */
     private fun loadAllScripts() {
         scriptFolder.listFiles()?.forEach { file ->
             if (file.extension == "js") {
                 loadScript(file)
+            } else {
+                QuestPlugin.plugin.logger.info("[QuestScript] スキップ: ${file.name} (拡張子が.jsではありません)")
             }
         }
-
         QuestPlugin.plugin.logger.info("[QuestScript] ${questScripts.size}個のスクリプトを読み込みました")
     }
 
-    /**
-     * スクリプトファイルを読み込み
-     */
     fun loadScript(file: File) {
+        if (!isEnabled) return
+
+        val questId = file.nameWithoutExtension
+        val cx = RhinoContext.enter()
+        cx.optimizationLevel = -1
+
         try {
-            val questId = file.nameWithoutExtension
-            val context = Context.newBuilder("js")
-                .allowAllAccess(true)
-                .build()
 
-            // グローバル関数を登録
-            registerGlobalFunctions(context)
+            val scope = cx.initStandardObjects()
 
-            // スクリプト実行
-            val scriptContent = file.readText()
-            context.eval("js", scriptContent)
+            // JS 側 quest オブジェクト
+            val questObj = cx.newObject(scope)
+            scope.put("quest", scope, questObj)
 
-            // イベントハンドラを取得
+            // ユーティリティ関数登録
+            registerGlobalFunctions(scope)
+
+            // スクリプト読み込み
+            cx.evaluateString(scope, file.readText(), file.name, 1, null)
+
+            // Kotlin 側で quest.onStart などを取得
+            val onStart = (questObj.get("onStart", questObj) as? Function)
+            val onProgress = (questObj.get("onProgress", questObj) as? Function)
+            val onComplete = (questObj.get("onComplete", questObj) as? Function)
+            val onFail = (questObj.get("onFail", questObj) as? Function)
+
             val script = QuestScript(
                 questId = questId,
-                context = context,
-                onStart = context.getBindings("js").getMember("onStart"),
-                onProgress = context.getBindings("js").getMember("onProgress"),
-                onComplete = context.getBindings("js").getMember("onComplete"),
-                onFail = context.getBindings("js").getMember("onFail")
+                scope = scope,
+                onStart = onStart,
+                onProgress = onProgress,
+                onComplete = onComplete,
+                onFail = onFail
             )
 
             questScripts[questId] = script
-            contexts[questId] = context
+            contexts[questId] = scope
 
             QuestPlugin.plugin.logger.info("[QuestScript] ${file.name} を読み込みました")
-
         } catch (e: Exception) {
             QuestPlugin.plugin.logger.severe("[QuestScript] ${file.name} の読み込みに失敗: ${e.message}")
             e.printStackTrace()
+        } finally {
+            RhinoContext.exit()
         }
     }
 
-    /**
-     * グローバル関数の登録
-     */
-    private fun registerGlobalFunctions(context: Context) {
-        val bindings = context.getBindings("js")
+    private fun registerGlobalFunctions(scope: Scriptable) {
+        // quest オブジェクトは loadScript 内で作って JS スクリプトで設定済みなので
+        // 上書きしてはいけない
+        // val questObj = ScriptQuestAPI()
+        // scope.put("quest", scope, questObj)
 
-        // quest オブジェクト
-        val questObj = ScriptQuestAPI()
-        bindings.putMember("quest", questObj)
-
-        // ユーティリティ関数
-        bindings.putMember("summonBoss", ScriptUtilities::summonBoss)
-        bindings.putMember("fireworks", ScriptUtilities::fireworks)
-        bindings.putMember("broadcastMessage", ScriptUtilities::broadcastMessage)
-        bindings.putMember("giveItem", ScriptUtilities::giveItem)
-        bindings.putMember("playSound", ScriptUtilities::playSound)
-        bindings.putMember("spawnParticles", ScriptUtilities::spawnParticles)
+        // ユーティリティ関数だけ登録
+        scope.put("summonBoss", scope, ScriptUtilities::summonBoss)
+        scope.put("fireworks", scope, ScriptUtilities::fireworks)
+        scope.put("broadcastMessage", scope, ScriptUtilities::broadcastMessage)
+        scope.put("giveItem", scope, ScriptUtilities::giveItem)
+        scope.put("playSound", scope, ScriptUtilities::playSound)
+        scope.put("spawnParticles", scope, ScriptUtilities::spawnParticles)
     }
 
-    /**
-     * クエスト開始時のスクリプト実行
-     */
-    fun onQuestStart(player: Player, quest: QuestData) {
-        val script = questScripts[quest.id] ?: return
+    fun onQuestStart(player: Player, quest: QuestData) = executeFunction(player, quest.id, "onStart")
+    fun onQuestProgress(player: Player, quest: QuestData, amount: Int) = executeFunction(player, quest.id, "onProgress", amount)
+    fun onQuestComplete(player: Player, quest: QuestData) = executeFunction(player, quest.id, "onComplete")
+    fun onQuestFail(player: Player, quest: QuestData) = executeFunction(player, quest.id, "onFail")
 
-        if (script.onStart != null && script.onStart.canExecute()) {
-            try {
-                script.onStart.execute(PlayerWrapper(player))
-            } catch (e: Exception) {
-                QuestPlugin.plugin.logger.warning("[QuestScript] onStart実行エラー: ${e.message}")
-            }
+    private fun executeFunction(player: Player, questId: String, funcName: String, vararg args: Any) {
+        if (!isEnabled) return
+        val script = questScripts[questId] ?: return
+        val cx = RhinoContext.enter()
+        try {
+            val func = when(funcName) {
+                "onStart" -> script.onStart
+                "onProgress" -> script.onProgress
+                "onComplete" -> script.onComplete
+                "onFail" -> script.onFail
+                else -> null
+            } ?: return
+
+            val jsArgs = arrayOf(PlayerWrapper(player), *args)
+            func.call(cx, script.scope, script.scope, jsArgs)
+        } catch (e: Exception) {
+            QuestPlugin.plugin.logger.warning("[QuestScript] $funcName 実行エラー: ${e.message}")
+        } finally {
+            RhinoContext.exit()
         }
     }
 
-    /**
-     * 進行度更新時のスクリプト実行
-     */
-    fun onQuestProgress(player: Player, quest: QuestData, amount: Int) {
-        val script = questScripts[quest.id] ?: return
-
-        if (script.onProgress != null && script.onProgress.canExecute()) {
-            try {
-                script.onProgress.execute(PlayerWrapper(player), amount)
-            } catch (e: Exception) {
-                QuestPlugin.plugin.logger.warning("[QuestScript] onProgress実行エラー: ${e.message}")
-            }
-        }
-    }
-
-    /**
-     * クエスト完了時のスクリプト実行
-     */
-    fun onQuestComplete(player: Player, quest: QuestData) {
-        val script = questScripts[quest.id] ?: return
-
-        if (script.onComplete != null && script.onComplete.canExecute()) {
-            try {
-                script.onComplete.execute(PlayerWrapper(player))
-            } catch (e: Exception) {
-                QuestPlugin.plugin.logger.warning("[QuestScript] onComplete実行エラー: ${e.message}")
-            }
-        }
-    }
-
-    /**
-     * クエスト失敗時のスクリプト実行
-     */
-    fun onQuestFail(player: Player, quest: QuestData) {
-        val script = questScripts[quest.id] ?: return
-
-        if (script.onFail != null && script.onFail.canExecute()) {
-            try {
-                script.onFail.execute(PlayerWrapper(player))
-            } catch (e: Exception) {
-                QuestPlugin.plugin.logger.warning("[QuestScript] onFail実行エラー: ${e.message}")
-            }
-        }
-    }
-
-    /**
-     * サンプルスクリプトを作成
-     */
     private fun createExampleScripts() {
-        // ドラゴン討伐スクリプト
+        val readmeFile = File(scriptFolder, "README.txt")
+        readmeFile.writeText("""
+=== QuestPlugin スクリプトフォルダ ===
+
+このフォルダにJavaScriptファイル(.js)を配置することで、
+クエストに独自の動作を追加できます。
+
+サンプル: dragon_slayer.js を参照してください
+        """.trimIndent())
+
         val dragonScript = File(scriptFolder, "dragon_slayer.js")
         dragonScript.writeText("""
 // ドラゴン討伐クエストのスクリプト例
+// 使用方法: このファイルを dragon_slayer.js にリネームしてください
 
 quest.onStart = function(player) {
     player.sendMessage("§c§lドラゴンが現れた！");
     player.addPotionEffect("FIRE_RESISTANCE", 6000, 1);
-    
-    // ボスを召喚
     summonBoss(player.getLocation(), "ENDER_DRAGON");
-    
-    // サウンド再生
     playSound(player, "ENTITY_ENDER_DRAGON_GROWL", 1.0, 1.0);
 };
 
@@ -185,7 +170,6 @@ quest.onProgress = function(player, amount) {
         player.sendMessage("§a§lドラゴンに大ダメージを与えた！");
         player.addPotionEffect("STRENGTH", 600, 2);
     }
-    
     if (amount >= 50) {
         player.sendMessage("§e§lドラゴンが弱ってきた！");
         fireworks(player.getLocation(), 3);
@@ -194,20 +178,12 @@ quest.onProgress = function(player, amount) {
 
 quest.onComplete = function(player) {
     player.sendMessage("§6§l§k|||§r §6§lドラゴンを倒した！ §k|||");
-    
-    // 花火を打ち上げ
     fireworks(player.getLocation(), 10);
-    
-    // 全体通知
     broadcastMessage("§e" + player.getName() + " §7がドラゴンを倒した！");
-    
-    // 特別アイテム付与
     giveItem(player, "DIAMOND_SWORD", 1, "§b§lドラゴンスレイヤー", [
         "§7伝説のドラゴンを倒した証",
         "§c攻撃力 +10"
     ]);
-    
-    // エフェクト
     spawnParticles(player.getLocation(), "DRAGON_BREATH", 50);
 };
 
@@ -217,142 +193,89 @@ quest.onFail = function(player) {
 };
         """.trimIndent())
 
-        QuestPlugin.plugin.logger.info("[QuestScript] サンプルスクリプトを作成しました")
+        QuestPlugin.plugin.logger.info("[QuestScript] サンプルスクリプトを作成しました（.example拡張子）")
     }
 
     fun shutdown() {
-        contexts.values.forEach { it.close() }
         contexts.clear()
         questScripts.clear()
     }
+
+    fun isScriptEnabled(): Boolean = isEnabled
 }
 
-/**
- * スクリプトデータクラス
- */
 data class QuestScript(
     val questId: String,
-    val context: Context,
-    val onStart: Value?,
-    val onProgress: Value?,
-    val onComplete: Value?,
-    val onFail: Value?
+    val scope: Scriptable,
+    val onStart: Function?,
+    val onProgress: Function?,
+    val onComplete: Function?,
+    val onFail: Function?
 )
 
-/**
- * Playerラッパー（JavaScript用）
- */
 class PlayerWrapper(private val player: Player) {
-
-    fun sendMessage(message: String) {
-        player.sendMessage(message)
-    }
-
+    fun sendMessage(message: String) = player.sendMessage(message)
     fun getName(): String = player.name
-
-    fun getLocation(): LocationWrapper {
-        return LocationWrapper(player.location)
-    }
-
+    fun getLocation(): LocationWrapper = LocationWrapper(player.location)
     fun addPotionEffect(effect: String, duration: Int, amplifier: Int) {
-        val effectType = org.bukkit.potion.PotionEffectType.getByName(effect) ?: return
-        player.addPotionEffect(org.bukkit.potion.PotionEffect(effectType, duration, amplifier))
+        val type = org.bukkit.potion.PotionEffectType.getByName(effect) ?: return
+        player.addPotionEffect(org.bukkit.potion.PotionEffect(type, duration, amplifier))
     }
-
-    fun teleport(x: Double, y: Double, z: Double) {
-        val loc = Location(player.world, x, y, z)
-        player.teleport(loc)
-    }
+    fun teleport(x: Double, y: Double, z: Double) = player.teleport(Location(player.world, x, y, z))
 }
 
 class LocationWrapper(private val location: Location) {
-
     fun getX(): Double = location.x
     fun getY(): Double = location.y
     fun getZ(): Double = location.z
     fun getWorld(): String = location.world.name
 }
 
-/**
- * スクリプトユーティリティ関数
- */
 object ScriptUtilities {
-
-    @JvmStatic
-    fun summonBoss(location: LocationWrapper, entityType: String) {
+    @JvmStatic fun summonBoss(location: LocationWrapper, entityType: String) {
         val world = Bukkit.getWorld(location.getWorld()) ?: return
-        val loc = Location(world, location.getX(), location.getY(), location.getZ())
-
-        val type = org.bukkit.entity.EntityType.valueOf(entityType)
-        world.spawnEntity(loc, type)
+        world.spawnEntity(Location(world, location.getX(), location.getY(), location.getZ()), org.bukkit.entity.EntityType.valueOf(entityType))
     }
-
-    @JvmStatic
-    fun fireworks(location: LocationWrapper, count: Int) {
+    @JvmStatic fun fireworks(location: LocationWrapper, count: Int) {
         val world = Bukkit.getWorld(location.getWorld()) ?: return
         val loc = Location(world, location.getX(), location.getY(), location.getZ())
-
         repeat(count) {
-            val firework = world.spawn(loc, org.bukkit.entity.Firework::class.java)
-            val meta = firework.fireworkMeta
+            val fw = world.spawn(loc, org.bukkit.entity.Firework::class.java)
+            val meta = fw.fireworkMeta
             meta.power = 1
-            meta.addEffect(
-                org.bukkit.FireworkEffect.builder()
-                    .withColor(org.bukkit.Color.RED, org.bukkit.Color.YELLOW)
-                    .with(org.bukkit.FireworkEffect.Type.BALL_LARGE)
-                    .build()
-            )
-            firework.fireworkMeta = meta
+            meta.addEffect(org.bukkit.FireworkEffect.builder()
+                .withColor(org.bukkit.Color.RED, org.bukkit.Color.YELLOW)
+                .with(org.bukkit.FireworkEffect.Type.BALL_LARGE)
+                .build())
+            fw.fireworkMeta = meta
         }
     }
-
-    @JvmStatic
-    fun broadcastMessage(message: String) {
-        Bukkit.broadcastMessage(message)
-    }
-
-    @JvmStatic
-    fun giveItem(player: PlayerWrapper, material: String, amount: Int, name: String?, lore: List<String>?) {
-        val bukkitPlayer = Bukkit.getPlayer(player.getName()) ?: return
+    @JvmStatic fun broadcastMessage(message: String) = Bukkit.broadcastMessage(message)
+    @JvmStatic fun giveItem(player: PlayerWrapper, material: String, amount: Int, name: String?, lore: List<String>?) {
+        val p = Bukkit.getPlayer(player.getName()) ?: return
         val item = org.bukkit.inventory.ItemStack(org.bukkit.Material.valueOf(material), amount)
-
         if (name != null || lore != null) {
             val meta = item.itemMeta
-            if (name != null) {
-                meta.displayName(net.kyori.adventure.text.Component.text(name))
-            }
-            if (lore != null) {
-                meta.lore(lore.map { net.kyori.adventure.text.Component.text(it) })
-            }
+            if (name != null) meta.displayName(net.kyori.adventure.text.Component.text(name))
+            if (lore != null) meta.lore(lore.map { net.kyori.adventure.text.Component.text(it) })
             item.itemMeta = meta
         }
-
-        bukkitPlayer.inventory.addItem(item)
+        p.inventory.addItem(item)
     }
-
-    @JvmStatic
-    fun playSound(player: PlayerWrapper, sound: String, volume: Double, pitch: Double) {
-        val bukkitPlayer = Bukkit.getPlayer(player.getName()) ?: return
-        val soundType = org.bukkit.Sound.valueOf(sound)
-        bukkitPlayer.playSound(bukkitPlayer.location, soundType, volume.toFloat(), pitch.toFloat())
+    @JvmStatic fun playSound(player: PlayerWrapper, sound: String, volume: Double, pitch: Double) {
+        val p = Bukkit.getPlayer(player.getName()) ?: return
+        p.playSound(p.location, org.bukkit.Sound.valueOf(sound), volume.toFloat(), pitch.toFloat())
     }
-
-    @JvmStatic
-    fun spawnParticles(location: LocationWrapper, particle: String, count: Int) {
+    @JvmStatic fun spawnParticles(location: LocationWrapper, particle: String, count: Int) {
         val world = Bukkit.getWorld(location.getWorld()) ?: return
         val loc = Location(world, location.getX(), location.getY(), location.getZ())
-        val particleType = org.bukkit.Particle.valueOf(particle)
-
-        world.spawnParticle(particleType, loc, count)
+        world.spawnParticle(org.bukkit.Particle.valueOf(particle), loc, count)
     }
 }
 
-/**
- * クエストAPI（JavaScript用）
- */
 class ScriptQuestAPI {
-    var onStart: Value? = null
-    var onProgress: Value? = null
-    var onComplete: Value? = null
-    var onFail: Value? = null
+    var onStart: Function? = null
+    var onProgress: Function? = null
+    var onComplete: Function? = null
+    var onFail: Function? = null
 }
